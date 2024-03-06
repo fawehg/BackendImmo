@@ -29,11 +29,18 @@ class ClientController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        $client->save();
 
-        return response()->json(['message' => 'Inscription réussie'], 201);
+           if (!$token = JWTAuth::fromUser($client)) {
+        $response["ResultInfo"]["Success"] = false;
+        $response["ResultInfo"]["ErrorMessage"] = 'Erreur lors de la génération du token.';
+        return response()->json($response, 401);
     }
 
+    $response["ResultData"]['token'] = $token;
+    $response["ResultData"]['user'] = $client;
+
+    return response()->json($response, 201);
+}
     public function signin(Request $request)
     {
         $credentials = $request->only('email', 'password');
