@@ -1,17 +1,26 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+
+
 use App\Http\Controllers\AuthController;
+
+
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\DemandeController;
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'client'
+], function ($router) {
 
-Route::post('/demandes', [DemandeController::class, 'store']);
+Route::post('/register', [ClientController::class, 'signup']);
+Route::post('/login', [ClientController::class, 'signin']);
+});
 
-Route::post('/signup', [ClientController::class, 'signup']);
-Route::post('/signin', [ClientController::class, 'signin']);
-
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/user/{id}', 'AuthController@show');
-Route::put('/ouvrier/{id}', 'AuthController@update');
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'ouvrier'
+], function ($router) {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
