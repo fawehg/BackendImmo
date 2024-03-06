@@ -12,6 +12,14 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        $response = [
+            "ResultInfo" => [
+                'Success' => true,
+                'ErrorMessage' => "",
+            ],
+            "ResultData" => []
+        ];
+
         $validator = Validator::make($request->all(), [
             'nom' => 'required|string',
             'prenom' => 'required|string',
@@ -28,7 +36,10 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            $response["ResultInfo"]["Success"] = false;
+            $response["ResultInfo"]["ErrorMessage"] = $validator->errors();
+
+            return response()->json($response, 400);
         }
 
         $user = User::create([
@@ -44,9 +55,17 @@ class AuthController extends Controller
             'heureDebut' => $request->heureDebut,
             'heureFin' => $request->heureFin,
         ]);
-
-        return response()->json(['message' => 'Inscription réussie !'], 201);
+       if (!$token = JWTAuth::fromUser($user)) {
+        $response["ResultInfo"]["Success"] = false;
+        $response["ResultInfo"]["ErrorMessage"] = 'Erreur lors de la génération du token.';
+        return response()->json($response, 401);
     }
+
+    $response["ResultData"]['token'] = $token;
+    $response["ResultData"]['user'] = $user;
+
+    return response()->json($response, 201);
+}
 
     public function login(Request $request)
     {
