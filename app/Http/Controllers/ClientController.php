@@ -10,37 +10,48 @@ use App\Models\Client;
 class ClientController extends Controller
 {
     public function signup(Request $request)
-    {
-        $request->validate([
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'ville' => 'required|string',
-            'adresse' => 'required|string',
-            'email' => 'required|email|unique:clients',
-            'password' => 'required|string|min:6',
-        ]);
+{
+    $request->validate([
+        'nom' => 'required|string',
+        'prenom' => 'required|string',
+        'ville' => 'required|string',
+        'adresse' => 'required|string',
+        'email' => 'required|email|unique:clients',
+        'password' => 'required|string|min:6',
+    ]);
 
-        $client = new Client([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'ville' => $request->ville,
-            'adresse' => $request->adresse,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
+    // Créer un nouvel utilisateur
+    $client = new Client([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'ville' => $request->ville,
+        'adresse' => $request->adresse,
+        'email' => $request->email,
+        'password' => bcrypt($request->password),
+    ]);
 
+    // Sauvegarder le client dans la base de données
+    $client->save();
 
-           if (!$token = JWTAuth::fromUser($client)) {
-        $response["ResultInfo"]["Success"] = false;
-        $response["ResultInfo"]["ErrorMessage"] = 'Erreur lors de la génération du token.';
-        return response()->json($response, 401);
-    }
+    // Générer le token JWT pour le client
+    $token = JWTAuth::fromUser($client);
 
-    $response["ResultData"]['token'] = $token;
-    $response["ResultData"]['user'] = $client;
+    // Créer la réponse JSON
+    $response = [
+        "ResultInfo" => [
+            'Success' => true,
+            'ErrorMessage' => "",
+        ],
+        "ResultData" => [
+            'token' => $token,
+            'client' => $client,
+        ]
+    ];
 
     return response()->json($response, 201);
 }
+
+
     public function signin(Request $request)
     {
         $credentials = $request->only('email', 'password');
