@@ -51,15 +51,19 @@ class ClientController extends Controller
         }
         $response["ResultInfo"]["Success"] = true;
         $response["ResultData"]['token'] = $token;
-        
+    
+        // Récupérer les informations du client à partir de la base de données
+        $client = Client::where('email', $request->email)->first();
+        $response["ResultData"]['client'] = $client;
+    
         return response()->json($response, 200);
-        
     }
 
     public function show($id)
     {
-        $user = Client::findOrFail($id);
-        return response()->json($user);
+        $client = Client::findOrFail($id);
+
+        return response()->json($client);
     }
 
     public function update(Request $request, $id)
