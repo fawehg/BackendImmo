@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Domaine extends Model
 {
-    public function specialite()
+    protected $fillable = ['nom_domaine'];
+
+    public function specialites()
     {
-        return $this->belongsTo(Specialite::class);
+        return $this->hasMany(Specialite::class);
     }
 }
-
