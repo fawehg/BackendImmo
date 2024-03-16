@@ -10,30 +10,30 @@ class DemandeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'service' => 'required',
-            'panneType' => 'required',
-            'city' => 'required',
+            'domaines' => 'required|string',
+            'specialites' => 'required|string',
+            'city' => 'required|string',
             'date' => 'required|date',
-            'time' => 'required',
-            'description' => 'required',
+            'time' => 'required|date_format:H:i',
+            'description' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $demande = new Demande();
-        $demande->service = $request->service;
-        $demande->panneType = $request->panneType;
+        $demande->domaines = $request->domaines;
+        $demande->specialites = $request->specialites;
         $demande->city = $request->city;
         $demande->date = $request->date;
         $demande->time = $request->time;
         $demande->description = $request->description;
 
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('images');
+            $imagePath = $request->file('image')->store('uploads', 'public');
             $demande->image = $imagePath;
         }
 
         $demande->save();
 
-        return response()->json(['message' => 'Demande created successfully'], 201);
+        return response()->json(['message' => 'Demande créée avec succès'], 201);
     }
 }

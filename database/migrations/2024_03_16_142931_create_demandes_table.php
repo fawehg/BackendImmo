@@ -4,14 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDemandesTable extends Migration
+return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up()
     {
         Schema::create('demandes', function (Blueprint $table) {
             $table->id();
-            $table->string('service');
-            $table->string('panneType');
+            $table->string('domaines');
+            $table->string('specialites');
             $table->string('city');
             $table->date('date');
             $table->time('time');
@@ -20,10 +23,14 @@ class CreateDemandesTable extends Migration
             $table->timestamps();
         });
     }
+    
+    
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('demandes');
     }
-}
-
+};
