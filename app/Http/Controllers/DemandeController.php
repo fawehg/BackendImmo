@@ -34,6 +34,16 @@ class DemandeController extends Controller
 
         $demande->save();
 
-        return response()->json(['message' => 'Demande créée avec succès'], 201);
+        $response = [
+            "ResultInfo" => [
+                'Success' => true,
+                'ErrorMessage' => "",
+            ],
+            "ResultData" => [
+                'message' => 'Demande créée avec succès'
+            ]
+        ];
+        return response()->json($response, 201);
+
     }
 }

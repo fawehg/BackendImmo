@@ -179,5 +179,32 @@ class ClientController extends Controller
     
         return response()->json($response, 200);
     }
-    
+    public function logout(Request $request)
+    {
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+
+            $response = [
+                "ResultInfo" => [
+                    'Success' => true,
+                    'ErrorMessage' => "",
+                ],
+                "ResultData" => [
+                    'message' => 'Déconnexion réussie.'
+                ]
+            ];
+
+            return response()->json($response, 200);
+        } catch (\Exception $e) {
+            // En cas d'erreur, retournez un message d'erreur approprié
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => false,
+                    'ErrorMessage' => "Une erreur s'est produite lors de la déconnexion.",
+                ],
+                "ResultData" => []
+            ], 500);
+        }
+    }
+
 }
