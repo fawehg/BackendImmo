@@ -23,7 +23,6 @@ class ClientController extends Controller
         'password' => 'required|string|min:6',
     ]);
 
-    // Créer un nouvel utilisateur
     $client = new Client([
         'nom' => $request->nom,
         'prenom' => $request->prenom,
@@ -37,7 +36,6 @@ class ClientController extends Controller
 
     $token = JWTAuth::fromUser($client);
 
-    // Créer la réponse JSON
     $response = [
         "ResultInfo" => [
             'Success' => true,
@@ -196,7 +194,6 @@ class ClientController extends Controller
 
             return response()->json($response, 200);
         } catch (\Exception $e) {
-            // En cas d'erreur, retournez un message d'erreur approprié
             return response()->json([
                 "ResultInfo" => [
                     'Success' => false,
