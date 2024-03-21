@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResetPasswordCode;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Storage; 
 
 class AuthController extends Controller
 {
@@ -37,6 +38,7 @@ class AuthController extends Controller
             'joursDisponibilite' => 'array',
             'heureDebut' => 'required|string',
             'heureFin' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Ajout de la validation pour l'image
         ]);
 
         if ($validator->fails()) {
@@ -44,6 +46,13 @@ class AuthController extends Controller
             $response["ResultInfo"]["ErrorMessage"] = $validator->errors();
 
             return response()->json($response, 400);
+        }
+
+        // Traitement de l'image
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('images', 'public');
+        } else {
+            $imagePath = null;
         }
 
         $user = User::create([
@@ -58,6 +67,7 @@ class AuthController extends Controller
             'joursDisponibilite' => $request->joursDisponibilite,
             'heureDebut' => $request->heureDebut,
             'heureFin' => $request->heureFin,
+            'image' => $imagePath, // Stockage du chemin de l'image dans la base de données
         ]);
         
         if (!$token = JWTAuth::fromUser($user)) {
@@ -71,7 +81,6 @@ class AuthController extends Controller
 
         return response()->json($response, 201);
     }
-
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -99,11 +108,62 @@ class AuthController extends Controller
         $user = User::findOrFail($id);
         return response()->json($user);
     }
-
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->update($request->all());
+
+        $validator = Validator::make($request->all(), [
+            'nom' => 'string',
+            'prenom' => 'string',
+            'email' => 'email|unique:users,email,' . $user->id,
+            'ville' => 'string',
+            'adresse' => 'string',
+            'password' => 'string',
+            'confirmationMotDePasse' => 'string|same:password',
+            'profession' => 'string',
+            'specialties' => 'array',
+            'joursDisponibilite' => 'array',
+            'heureDebut' => 'string',
+            'heureFin' => 'string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Ajout de la validation pour l'image
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => false,
+                    'ErrorMessage' => $validator->errors(),
+                ],
+                "ResultData" => []
+            ], 400);
+        }
+
+        // Traitement de l'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($user->image) {
+                Storage::disk('public')->delete($user->image);
+            }
+            $imagePath = $request->file('image')->store('images', 'public');
+        } else {
+            $imagePath = $user->image;
+        }
+
+        $user->update([
+            'nom' => $request->nom ?? $user->nom,
+            'prenom' => $request->prenom ?? $user->prenom,
+            'email' => $request->email ?? $user->email,
+            'ville' => $request->ville ?? $user->ville,
+            'adresse' => $request->adresse ?? $user->adresse,
+            'password' => $request->password ? bcrypt($request->password) : $user->password,
+            'profession' => $request->profession ?? $user->profession,
+            'specialties' => $request->specialties ?? $user->specialties,
+            'joursDisponibilite' => $request->joursDisponibilite ?? $user->joursDisponibilite,
+            'heureDebut' => $request->heureDebut ?? $user->heureDebut,
+            'heureFin' => $request->heureFin ?? $user->heureFin,
+            'image' => $imagePath, // Stockage du chemin de l'image dans la base de données
+        ]);
+
         return response()->json($user);
     }
 
