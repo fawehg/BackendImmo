@@ -8,9 +8,13 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DomaineController;
 use App\Http\Controllers\SpecialiteController;
-use App\Http\Controllers\PasswordResetController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DemandeController;
+use App\Http\Controllers\EspaceProController;
+
+
+
+Route::post('/login', [EspaceProController::class, 'login']);
 Route::get('/user/{id}', [AuthController::class, 'show']);
 
 Route::put('/user/{id}', [AuthController::class, 'update']);
