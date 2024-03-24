@@ -11,7 +11,9 @@ use App\Http\Controllers\SpecialiteController;
 use App\Http\Controllers\PasswordResetController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DemandeController;
+Route::get('/user/{id}', [AuthController::class, 'show']);
 
+Route::put('/user/{id}', [AuthController::class, 'update']);
 
 Route::get('/domaines', [DomaineController::class, 'index']);
 Route::post('/domaines', [DomaineController::class, 'store']);
