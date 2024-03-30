@@ -49,4 +49,6 @@ Route::group([
     Route::post('/logout', [AuthController::class, 'logout']); 
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
+    Route::get('/profil', [AuthController::class, 'profil']);
+    Route::put('/profil', [AuthController::class, 'mettreAJourProfil']);
 });

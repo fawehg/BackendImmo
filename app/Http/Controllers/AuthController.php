@@ -279,5 +279,90 @@ public function logout(Request $request)
         ], 500);
     }
 }
+    // Autres méthodes existantes dans votre AuthController...
+    public function profil(Request $request)
+    {
+        try {
+            // Récupérer l'utilisateur actuellement authentifié
+            $user = $request->user();
+    
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => true,
+                ],
+                "ResultData" => [
+                    'data' => $user,
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => false,
+                    'ErrorMessage' => "Erreur lors de la récupération du profil de l'utilisateur",
+                ],
+                "ResultData" => [
+                    'error' => $e->getMessage(),
+                ]
+            ], 500);
+        }
+    }
 
+    public function mettreAJourProfil(Request $request)
+    {
+        try {
+            // Récupérer l'utilisateur actuellement authentifié
+            $user = $request->user();
+    
+            // Valider les données envoyées par l'utilisateur
+            $validator = Validator::make($request->all(), [
+                'nom' => 'required|string',
+                'prenom' => 'required|string',
+                'email' => 
+                    'required',
+                    'email' => 'required|email|unique:users,email,' . $user->id,
+
+                'password' => 'nullable|string|min:6']); // Rendre le mot de passe facultatif
+                // Ajoutez d'autres validations si nécessaire
+        
+    
+            if ($validator->fails()) {
+                return response()->json([
+                    "ResultInfo" => [
+                        'Success' => false,
+                        'ErrorMessage' => 'Validation failed',
+                    ],
+                    "ResultData" => [
+                        'errors' => $validator->errors(),
+                    ]
+                ], 400);
+            }
+    
+            // Vérifier s'il y a un changement de mot de passe
+            if ($request->has('password')) {
+                // Hacher le nouveau mot de passe
+                $request->merge(['password' => bcrypt($request->password)]);
+            }
+    
+            // Mettre à jour les informations du profil de l'utilisateur
+            $user->update($request->all());
+    
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => true,
+                    'Message' => 'Profil mis à jour avec succès',
+                ],
+                "ResultData" => []
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => false,
+                    'ErrorMessage' => "Erreur lors de la mise à jour du profil de l'utilisateur",
+                ],
+                "ResultData" => []
+            ], 500);
+        }
+    }
 }
+
+
