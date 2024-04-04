@@ -11,6 +11,12 @@ use App\Http\Controllers\SpecialiteController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\EspaceProController;
+use App\Http\Controllers\RechercheOuvrier;
+use App\Http\Controllers\RechercheOuvrierController;
+
+Route::get('/recherche-ouvrier', [RechercheOuvrierController::class, 'rechercherOuvriers']);
+
+
 
 
 
