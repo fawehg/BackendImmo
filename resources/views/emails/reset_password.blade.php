@@ -13,8 +13,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            
+            justify-content: center;
         }
         .container {
             background-color: #ffffff;
@@ -45,9 +44,14 @@
         .footer {
             color: #999999;
             margin-top: 20px;
+            border-top: 1px solid #dddddd;
+            padding-top: 20px;
         }
         .footer p {
             margin: 5px 0;
+        }
+        .footer p:last-child {
+            margin-bottom: 0;
         }
     </style>
 </head>
@@ -60,7 +64,7 @@
         <p>Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet e-mail.</p>
         <div class="footer">
             <p>Cordialement,</p>
-            <p>Votre équipe</p>
+            <p>B2C</p>
         </div>
     </div>
 </body>

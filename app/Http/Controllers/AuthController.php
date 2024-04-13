@@ -38,7 +38,7 @@ class AuthController extends Controller
             'joursDisponibilite' => 'array',
             'heureDebut' => 'required|string',
             'heureFin' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Ajout de la validation pour l'image
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
         ]);
 
         if ($validator->fails()) {
@@ -48,7 +48,6 @@ class AuthController extends Controller
             return response()->json($response, 400);
         }
 
-        // Traitement de l'image
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('images', 'public');
         } else {
@@ -67,7 +66,7 @@ class AuthController extends Controller
             'joursDisponibilite' => $request->joursDisponibilite,
             'heureDebut' => $request->heureDebut,
             'heureFin' => $request->heureFin,
-            'image' => $imagePath, // Stockage du chemin de l'image dans la base de données
+            'image' => $imagePath, 
         ]);
         
         if (!$token = JWTAuth::fromUser($user)) {
@@ -125,7 +124,7 @@ class AuthController extends Controller
             'joursDisponibilite' => 'array',
             'heureDebut' => 'string',
             'heureFin' => 'string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Ajout de la validation pour l'image
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
         ]);
 
         if ($validator->fails()) {
@@ -138,9 +137,7 @@ class AuthController extends Controller
             ], 400);
         }
 
-        // Traitement de l'image
         if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image si elle existe
             if ($user->image) {
                 Storage::disk('public')->delete($user->image);
             }
@@ -161,7 +158,7 @@ class AuthController extends Controller
             'joursDisponibilite' => $request->joursDisponibilite ?? $user->joursDisponibilite,
             'heureDebut' => $request->heureDebut ?? $user->heureDebut,
             'heureFin' => $request->heureFin ?? $user->heureFin,
-            'image' => $imagePath, // Stockage du chemin de l'image dans la base de données
+            'image' => $imagePath, 
         ]);
 
         return response()->json($user);
@@ -185,16 +182,14 @@ class AuthController extends Controller
             ], 404);
         }
     
-        $resetCode = mt_rand(100000, 999999); // Générer un code de réinitialisation aléatoire
+        $resetCode = mt_rand(100000, 999999); 
     
-        // Stocker le code de réinitialisation dans la base de données
         DB::table('password_resets')->insert([
             'email' => $request->email,
             'token' => $resetCode,
             'created_at' => now(),
         ]);
     
-        // Envoyer le code de réinitialisation par e-mail
         Mail::to($user->email)->send(new ResetPasswordCode($resetCode));
     
         return response()->json([
@@ -216,7 +211,6 @@ class AuthController extends Controller
         'password' => 'required|string|min:6',
     ]);
 
-    // Vérifie si le code de réinitialisation est valide
     $reset = DB::table('password_resets')
         ->where('email', $request->email)
         ->where('token', $request->code)
@@ -232,14 +226,11 @@ class AuthController extends Controller
         ], 400);
     }
 
-    // Vérification de la validité du code de réinitialisation (par exemple, expiration)
 
-    // Mettre à jour le mot de passe de l'utilisateur
     $user = User::where('email', $request->email)->first();
     $user->password = Hash::make($request->password);
     $user->save();
 
-    // Supprimer l'entrée de réinitialisation de mot de passe de la base de données
     DB::table('password_resets')->where('email', $request->email)->delete();
 
     return response()->json([
@@ -269,7 +260,6 @@ public function logout(Request $request)
 
         return response()->json($response, 200);
     } catch (\Exception $e) {
-        // En cas d'erreur, retournez un message d'erreur approprié
         return response()->json([
             "ResultInfo" => [
                 'Success' => false,
@@ -279,11 +269,9 @@ public function logout(Request $request)
         ], 500);
     }
 }
-    // Autres méthodes existantes dans votre AuthController...
     public function profil(Request $request)
     {
         try {
-            // Récupérer l'utilisateur actuellement authentifié
             $user = $request->user();
     
             return response()->json([
@@ -310,10 +298,8 @@ public function logout(Request $request)
     public function mettreAJourProfil(Request $request)
     {
         try {
-            // Récupérer l'utilisateur actuellement authentifié
             $user = $request->user();
     
-            // Valider les données envoyées par l'utilisateur
             $validator = Validator::make($request->all(), [
                 'nom' => 'required|string',
                 'prenom' => 'required|string',
@@ -321,8 +307,7 @@ public function logout(Request $request)
                     'required',
                     'email' => 'required|email|unique:users,email,' . $user->id,
 
-                'password' => 'nullable|string|min:6']); // Rendre le mot de passe facultatif
-                // Ajoutez d'autres validations si nécessaire
+                'password' => 'nullable|string|min:6']);
         
     
             if ($validator->fails()) {
@@ -337,13 +322,10 @@ public function logout(Request $request)
                 ], 400);
             }
     
-            // Vérifier s'il y a un changement de mot de passe
             if ($request->has('password')) {
-                // Hacher le nouveau mot de passe
                 $request->merge(['password' => bcrypt($request->password)]);
             }
     
-            // Mettre à jour les informations du profil de l'utilisateur
             $user->update($request->all());
     
             return response()->json([

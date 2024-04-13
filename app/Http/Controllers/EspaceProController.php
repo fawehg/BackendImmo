@@ -17,7 +17,6 @@ class EspaceProController extends Controller
             "ResultData" => []
         ];
 
-        // Vos identifiants
         $validEmail = "business2client2024@gmail.com";
         $validPassword = "Khalilo2512";
 
@@ -28,7 +27,6 @@ class EspaceProController extends Controller
         }
 
         $response["ResultInfo"]["Success"] = true;
-        // Vous pouvez renvoyer d'autres données utilisateur si nécessaire
         $response["ResultData"]['user'] = ['email' => $validEmail];
 
         return response()->json($response, 200);

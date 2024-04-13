@@ -27,7 +27,15 @@ class User extends Authenticatable implements JWTSubject
         'joursDisponibilite' => 'array',
     ];
 
-   
+    public function domaine()
+    {
+        return $this->belongsTo(Domaine::class);
+    }
+
+    public function specialite()
+    {
+        return $this->belongsTo(Specialite::class);
+    }
     public function getJWTIdentifier()
     {
         return $this->getKey();

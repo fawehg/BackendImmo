@@ -2,28 +2,28 @@
 
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Http\Request;
 
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DomaineController;
 use App\Http\Controllers\SpecialiteController;
-use Illuminate\Http\Request;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\EspaceProController;
-use App\Http\Controllers\RechercheOuvrier;
 use App\Http\Controllers\RechercheOuvrierController;
 
-Route::get('/recherche-ouvrier', [RechercheOuvrierController::class, 'rechercherOuvriers']);
 
 
 
 
-
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'admin'
+], function ($router) {
 Route::post('/login', [EspaceProController::class, 'login']);
-Route::get('/user/{id}', [AuthController::class, 'show']);
+});
 
-Route::put('/user/{id}', [AuthController::class, 'update']);
 
 Route::get('/domaines', [DomaineController::class, 'index']);
 Route::post('/domaines', [DomaineController::class, 'store']);
@@ -57,4 +57,6 @@ Route::group([
     Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
     Route::get('/profil', [AuthController::class, 'profil']);
     Route::put('/profil', [AuthController::class, 'mettreAJourProfil']);
+    Route::get('/ouvriers', [RechercheOuvrierController::class, 'index']);
+
 });

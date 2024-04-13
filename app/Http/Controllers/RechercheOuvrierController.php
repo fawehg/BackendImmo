@@ -4,36 +4,45 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 class RechercheOuvrierController extends Controller
 {
-    public function rechercherOuvriers(Request $request)
+    public function index(Request $request)
     {
-        // Récupérer les critères de recherche depuis la requête
-        $profession = $request->input('profession');
-        $specialties = $request->input('specialties');
-        $date = $request->input('date');
-        $time = $request->input('time');
+        try {
+            $query = User::query();
 
-        // Filtrer les utilisateurs par profession et spécialités
-        $query = User::where('profession', $profession)
-                     ->whereJsonContains('specialties', $specialties);
+            if ($request->has('specialite_id')) {
+                $query->where('specialite_id', $request->specialite_id);
+            }
 
-        // Filtrage supplémentaire pour la disponibilité en fonction de la date et de l'heure
-        $query->whereExists(function ($query) use ($date, $time) {
-            $query->select(DB::raw(1))
-                  ->from('users')
-                  ->whereColumn('users.id', 'demandes.user_id')
-                  ->where('joursDisponibilite', 'like', '%' . date('l', strtotime($date)) . '%')
-                  ->whereTime('heureDebut', '<=', $time)
-                  ->whereTime('heureFin', '>=', $time);
-        });
+            if ($request->has('domaine_id')) {
+                $query->where('domaine_id', $request->domaine_id);
+            }
 
-        // Exécuter la requête et récupérer les utilisateurs correspondants
-        $utilisateurs = $query->get();
+            if ($request->has('ville')) {
+                $query->where('ville', $request->ville);
+            }
 
-        // Retourner les utilisateurs trouvés en réponse
-        return response()->json($utilisateurs);
+
+            $ouvriers = $query->get();
+
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => true,
+                    'ErrorMessage' => "",
+                ],
+                "ResultData" => $ouvriers
+            ]);
+        } catch (QueryException $e) {
+            return response()->json([
+                "ResultInfo" => [
+                    'Success' => false,
+                    'ErrorMessage' => $e->getMessage(),
+                ],
+                "ResultData" => null
+            ]);
+        }
     }
 }

@@ -12,4 +12,8 @@ class Domaine extends Model
     {
         return $this->hasMany(Specialite::class);
     }
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }
