@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Client;
 use App\Mail\ResetPasswordCode;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Auth;
+
 class ClientController extends Controller
 {
     public function signup(Request $request)
@@ -50,30 +53,29 @@ class ClientController extends Controller
     return response()->json($response, 201);
 }
 
+public function signin(Request $request)
+{
+    $credentials = $request->only('email', 'password');
+    $response = [
+        "ResultInfo" => [
+            'Success' => false,
+            'ErrorMessage' => "",
+        ],
+        "ResultData" => []
+    ];
 
-    public function signin(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-        $response = [
-            "ResultInfo" => [
-                'Success' => true,
-                'ErrorMessage' => "",
-            ],
-            "ResultData" => []
-        ];
-        if (!$token = JWTAuth::attempt($credentials)) {
-            $response["ResultInfo"]["Success"] = false;
-            $response["ResultInfo"]["ErrorMessage"] = 'Adresse e-mail ou mot de passe incorrect.';
-            return response()->json($response, 401);
-        }
+    if (Auth::guard('client_api')->attempt($credentials)) {
+        $client = Auth::guard('client_api')->user();
+        $token = JWTAuth::fromUser($client);
         $response["ResultInfo"]["Success"] = true;
         $response["ResultData"]['token'] = $token;
-    
-        $client = Client::where('email', $request->email)->first();
-        $response["ResultData"]['client'] = $client;
-    
-        return response()->json($response, 200);
+        return response()->json([ 'Success' => true, 'ErrorMessage' => '', 'ResultData' => ['token' => $token],'client' => $client]);
+
+    } else {
+        return response()->json(['message' => 'Adresse e-mail ou mot de passe incorrect.'], 401);
     }
+}
+
 
     public function show($id)
     {
