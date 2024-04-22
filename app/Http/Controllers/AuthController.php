@@ -14,72 +14,75 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Storage; 
 
 class AuthController extends Controller
-{
-    public function register(Request $request)
     {
-        $response = [
-            "ResultInfo" => [
-                'Success' => true,
-                'ErrorMessage' => "",
-            ],
-            "ResultData" => []
-        ];
-
-        $validator = Validator::make($request->all(), [
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'ville' => 'required|string',
-            'adresse' => 'required|string',
-            'password' => 'required|string',
-            'confirmationMotDePasse' => 'required|string|same:password',
-            'profession' => 'required|string',
-            'specialties' => 'array',
-            'joursDisponibilite' => 'array',
-            'heureDebut' => 'required|string',
-            'heureFin' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
-        ]);
-
-        if ($validator->fails()) {
-            $response["ResultInfo"]["Success"] = false;
-            $response["ResultInfo"]["ErrorMessage"] = $validator->errors();
-
-            return response()->json($response, 400);
-        }
-
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('images', 'public');
-        } else {
-            $imagePath = null;
-        }
-
-        $user = User::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'ville' => $request->ville,
-            'adresse' => $request->adresse,
-            'password' => bcrypt($request->password),
-            'profession' => $request->profession,
-            'specialties' => $request->specialties,
-            'joursDisponibilite' => $request->joursDisponibilite,
-            'heureDebut' => $request->heureDebut,
-            'heureFin' => $request->heureFin,
-            'image' => $imagePath, 
-        ]);
+        public function register(Request $request)
+        {
+            $response = [
+                "ResultInfo" => [
+                    'Success' => true,
+                    'ErrorMessage' => "",
+                ],
+                "ResultData" => []
+            ];
         
-        if (!$token = JWTAuth::fromUser($user)) {
-            $response["ResultInfo"]["Success"] = false;
-            $response["ResultInfo"]["ErrorMessage"] = 'Erreur lors de la génération du token.';
-            return response()->json($response, 401);
+            $validator = Validator::make($request->all(), [
+                'nom' => 'required|string',
+                'prenom' => 'required|string',
+                'email' => 'required|email|unique:users',
+                'ville' => 'required|string',
+                'adresse' => 'required|string',
+                'password' => 'required|string',
+                'confirmationMotDePasse' => 'required|string|same:password',
+                'profession' => 'required|string',
+                'specialties' => 'array',
+                'joursDisponibilite' => 'array',
+                'heureDebut' => 'required|string',
+                'heureFin' => 'required|string',
+                'numeroTelephone' => 'required|string', // Ajout du champ numeroTelephone
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
+            ]);
+        
+            if ($validator->fails()) {
+                $response["ResultInfo"]["Success"] = false;
+                $response["ResultInfo"]["ErrorMessage"] = $validator->errors();
+        
+                return response()->json($response, 400);
+            }
+        
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('images', 'public');
+            } else {
+                $imagePath = null;
+            }
+        
+            $user = User::create([
+                'nom' => $request->nom,
+                'prenom' => $request->prenom,
+                'email' => $request->email,
+                'ville' => $request->ville,
+                'adresse' => $request->adresse,
+                'password' => bcrypt($request->password),
+                'profession' => $request->profession,
+                'specialties' => $request->specialties,
+                'joursDisponibilite' => $request->joursDisponibilite,
+                'heureDebut' => $request->heureDebut,
+                'heureFin' => $request->heureFin,
+                'numeroTelephone' => $request->numeroTelephone, // Ajout du champ numeroTelephone
+                'image' => $imagePath, 
+            ]);
+            
+            if (!$token = JWTAuth::fromUser($user)) {
+                $response["ResultInfo"]["Success"] = false;
+                $response["ResultInfo"]["ErrorMessage"] = 'Erreur lors de la génération du token.';
+                return response()->json($response, 401);
+            }
+        
+            $response["ResultData"]['token'] = $token;
+            $response["ResultData"]['user'] = $user;
+        
+            return response()->json($response, 201);
         }
-
-        $response["ResultData"]['token'] = $token;
-        $response["ResultData"]['user'] = $user;
-
-        return response()->json($response, 201);
-    }
+        
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
