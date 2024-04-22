@@ -13,18 +13,12 @@ use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\EspaceProController;
 use App\Http\Controllers\RechercheOuvrierController;
 
-
-
-
-
 Route::group([
     'middleware' => 'api',
     'prefix' => 'admin'
 ], function ($router) {
 Route::post('/login', [EspaceProController::class, 'login']);
 });
-
-
 Route::get('/domaines', [DomaineController::class, 'index']);
 Route::post('/domaines', [DomaineController::class, 'store']);
 
