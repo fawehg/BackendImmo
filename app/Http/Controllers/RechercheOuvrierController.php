@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class RechercheOuvrierController extends Controller
 {
@@ -25,15 +26,27 @@ class RechercheOuvrierController extends Controller
                 $query->where('ville', $request->ville);
             }
 
-
             $ouvriers = $query->get();
+            
+            $user = auth()->user();
+            
+            if (!$user) {
+                $response["ResultInfo"]["Success"] = false;
+                $response["ResultInfo"]["ErrorMessage"] = 'Utilisateur non authentifié.';
+                return response()->json($response, 401);
+            }
+            
+            $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 "ResultInfo" => [
                     'Success' => true,
                     'ErrorMessage' => "",
                 ],
-                "ResultData" => $ouvriers
+                "ResultData" => [
+                    'ouvriers' => $ouvriers,
+                    'token' => $token,
+                ]
             ]);
         } catch (QueryException $e) {
             return response()->json([
