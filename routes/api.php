@@ -27,6 +27,7 @@ Route::post('/specialites', [SpecialiteController::class, 'store']);
 
 
 
+
 Route::group([
     'middleware' => 'api',
     'prefix' => 'client'
@@ -37,6 +38,9 @@ Route::post('/logout', [ClientController::class, 'logout']);
 Route::post('/reset-password', [ClientController::class, 'resetPassword']);
 Route::post('/verify-reset-code', [ClientController::class, 'verifyResetCode']);
 Route::post('/demandes', [DemandeController::class, 'store']);
+Route::get('/ouvriers', [RechercheOuvrierController::class, 'index']);
+Route::post('/demandes/select-ouvrier', [DemandeController::class, 'selectOuvrier']);
+
 
 });
 
@@ -51,6 +55,5 @@ Route::group([
     Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
     Route::get('/profil', [AuthController::class, 'profil']);
     Route::put('/profil', [AuthController::class, 'mettreAJourProfil']);
-    Route::get('/ouvriers', [RechercheOuvrierController::class, 'index']);
 
 });
