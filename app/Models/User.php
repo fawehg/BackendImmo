@@ -23,8 +23,7 @@ class User extends Authenticatable implements JWTSubject
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'specialties' => 'array',
-        'joursDisponibilite' => 'array',
+   
     ];
 
     public function domaine()
