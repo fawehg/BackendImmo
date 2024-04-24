@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Demande;
 use App\Notifications\NouvelleDemandeNotification;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class DemandeController extends Controller
 {
@@ -20,6 +22,12 @@ class DemandeController extends Controller
             'description' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        $client = Auth::guard('client_api')->user();
+
+        if (!$client) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
 
         $demande = new Demande();
         $demande->domaines = $request->domaines;
@@ -36,7 +44,8 @@ class DemandeController extends Controller
 
         $demande->save();
 
-        // Renvoyer une réponse avec succès et l'ID de la demande créée
+        $token = JWTAuth::fromUser($client);
+
         $response = [
             "ResultInfo" => [
                 'Success' => true,
@@ -44,12 +53,12 @@ class DemandeController extends Controller
             ],
             "ResultData" => [
                 'demande_id' => $demande->id,
-                'message' => 'Demande créée avec succès'
+                'message' => 'Demande créée avec succès',
+                'token' => $token,
             ]
         ];
         return response()->json($response, 201);
     }
-
     public function selectOuvrier(Request $request)
     {
         $request->validate([
@@ -63,10 +72,8 @@ class DemandeController extends Controller
         $demande = Demande::findOrFail($demandeId);
         $ouvrier = User::findOrFail($ouvrierId);
 
-        // Envoyer la notification à l'ouvrier choisi
         $ouvrier->notify(new NouvelleDemandeNotification($demande));
 
-        // Répondre avec un message de succès
         return response()->json(['message' => 'Notification envoyée à l\'ouvrier choisi']);
     }
 }
