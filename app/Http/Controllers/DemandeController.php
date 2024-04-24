@@ -36,7 +36,6 @@ class DemandeController extends Controller
 
         $demande->save();
 
-        // Renvoyer une réponse avec succès et l'ID de la demande créée
         $response = [
             "ResultInfo" => [
                 'Success' => true,
@@ -63,10 +62,8 @@ class DemandeController extends Controller
         $demande = Demande::findOrFail($demandeId);
         $ouvrier = User::findOrFail($ouvrierId);
 
-        // Envoyer la notification à l'ouvrier choisi
         $ouvrier->notify(new NouvelleDemandeNotification($demande));
 
-        // Répondre avec un message de succès
         return response()->json(['message' => 'Notification envoyée à l\'ouvrier choisi']);
     }
 }

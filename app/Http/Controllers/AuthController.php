@@ -30,7 +30,7 @@ class AuthController extends Controller
                 'prenom' => 'required|string',
                 'email' => 'required|email|unique:users',
                 'ville' => 'required|string',
-                'adresse' => 'required|string',
+                'adresse' => 'string',
                 'password' => 'required|string',
                 'confirmationMotDePasse' => 'required|string|same:password',
                 'profession' => 'required|string',
@@ -38,7 +38,7 @@ class AuthController extends Controller
                 'joursDisponibilite' => 'array',
                 'heureDebut' => 'required|string',
                 'heureFin' => 'required|string',
-                'numeroTelephone' => 'required|string', // Ajout du champ numeroTelephone
+                'numeroTelephone' => 'required|string', 
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
             ]);
         
@@ -67,7 +67,7 @@ class AuthController extends Controller
                 'joursDisponibilite' => $request->joursDisponibilite,
                 'heureDebut' => $request->heureDebut,
                 'heureFin' => $request->heureFin,
-                'numeroTelephone' => $request->numeroTelephone, // Ajout du champ numeroTelephone
+                'numeroTelephone' => $request->numeroTelephone,
                 'image' => $imagePath, 
             ]);
             

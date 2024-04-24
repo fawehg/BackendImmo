@@ -21,7 +21,7 @@ class NouvelleDemandeNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['mail']; // Envoyer la notification par email
+        return ['mail']; 
     }
 
     public function toMail($notifiable)
