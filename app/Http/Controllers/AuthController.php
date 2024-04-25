@@ -304,11 +304,9 @@ public function logout(Request $request)
             $user = $request->user();
     
             $validator = Validator::make($request->all(), [
-                'nom' => 'required|string',
-                'prenom' => 'required|string',
-                'email' => 
-                    'required',
-                    'email' => 'required|email|unique:users,email,' . $user->id,
+                'nom' => 'string',
+                'prenom' => 'string',
+                'email' => 'required|email|unique:users,email,' . $user->id,
 
                 'password' => 'nullable|string|min:6']);
         
