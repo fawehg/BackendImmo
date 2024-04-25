@@ -54,6 +54,6 @@ Route::group([
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
     Route::get('/profil', [AuthController::class, 'profil']);
-    Route::put('/mettre-A-Jour-Profil', [AuthController::class, 'mettreAJourProfil']);
+    Route::put('/update-profil', [AuthController::class, 'mettreAJourProfil']);
 
 });
