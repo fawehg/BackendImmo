@@ -14,7 +14,7 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'nom', 'prenom', 'email', 'ville', 'adresse', 'password', 'profession', 'specialties', 'joursDisponibilite', 'heureDebut', 'heureFin','numeroTelephone', 'image',
     ];
-    
+
 
     protected $hidden = [
         'password',
@@ -23,7 +23,8 @@ class User extends Authenticatable implements JWTSubject
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-   
+        'specialties' => 'array',
+        'joursDisponibilite' => 'array',
     ];
 
     public function domaine()
@@ -40,7 +41,7 @@ class User extends Authenticatable implements JWTSubject
         return $this->getKey();
     }
 
-   
+
     public function getJWTCustomClaims()
     {
         return [];
