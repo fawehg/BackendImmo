@@ -23,7 +23,6 @@ class DemandeController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Authentifier le client et obtenir l'utilisateur authentifié
         $client = Auth::guard('client_api')->user();
 
         // Si l'utilisateur n'est pas authentifié, retourner une erreur
