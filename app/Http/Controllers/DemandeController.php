@@ -7,6 +7,7 @@ use App\Models\Demande;
 use App\Notifications\NouvelleDemandeNotification;
 use App\Models\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Auth;
 
 class DemandeController extends Controller
 {
@@ -22,47 +23,38 @@ class DemandeController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $demande = new Demande();
-        $demande->domaines = $request->domaines;
-        $demande->specialites = $request->specialites;
-        $demande->city = $request->city;
-        $demande->date = $request->date;
-        $demande->time = $request->time;
-        $demande->description = $request->description;
+        // Authentifier le client et obtenir l'utilisateur authentifié
+        $client = Auth::guard('client_api')->user();
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('uploads', 'public');
-            $demande->image = $imagePath;
+        // Si l'utilisateur n'est pas authentifié, retourner une erreur
+        if (!$client) {
+            return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
         }
 
+        // Créer une nouvelle demande avec les données de la requête
+        $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
+
+        // Enregistrer l'image si elle est fournie
+        if ($request->hasFile('image')) {
+            $demande->image = $request->file('image')->store('uploads', 'public');
+        }
+
+        // Sauvegarder la demande
         $demande->save();
 
-        // Obtenir l'utilisateur authentifié
-        $client = auth()->user();
-
-        if (!$client) {
-            $response["ResultInfo"]["Success"] = false;
-            $response["ResultInfo"]["ErrorMessage"] = 'Utilisateur non authentifié.';
-            return response()->json($response, 401);
-        }
-
-        // Générer le token JWT à partir de l'utilisateur authentifié
+        // Générer le token JWT à partir de l'utilisateur authentifié (client)
         $token = JWTAuth::fromUser($client);
 
-        // Créer la réponse JSON avec le token inclus
-            $response = [
-                "ResultInfo" => [
-                    'Success' => true,
-                    'ErrorMessage' => "",
-                ],
-                "ResultData" => [
-                    'demande_id' => $demande->id,
-                    'token' => $token, // Inclure le token ici
-                    'message' => 'Demande créée avec succès'
-                ]
-            ];
-
-        return response()->json($response, 201);
+        // Retourner une réponse JSON avec les données de la demande et le token du client
+        return response()->json([
+            'Success' => true,
+            'ErrorMessage' => '',
+            'ResultData' => [
+                'demande' => $demande,
+                'client_token' => $token,
+                'message' => 'Demande créée avec succès'
+            ]
+        ], 201);
     }
 
 
