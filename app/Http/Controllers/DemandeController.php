@@ -25,26 +25,20 @@ class DemandeController extends Controller
 
         $client = Auth::guard('client_api')->user();
 
-        // Si l'utilisateur n'est pas authentifié, retourner une erreur
         if (!$client) {
             return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
         }
 
-        // Créer une nouvelle demande avec les données de la requête
         $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
 
-        // Enregistrer l'image si elle est fournie
         if ($request->hasFile('image')) {
             $demande->image = $request->file('image')->store('uploads', 'public');
         }
 
-        // Sauvegarder la demande
         $demande->save();
 
-        // Générer le token JWT à partir de l'utilisateur authentifié (client)
         $token = JWTAuth::fromUser($client);
 
-        // Retourner une réponse JSON avec les données de la demande et le token du client
         return response()->json([
             'Success' => true,
             'ErrorMessage' => '',
