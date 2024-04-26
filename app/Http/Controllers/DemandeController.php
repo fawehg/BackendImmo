@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Demande;
 use App\Notifications\NouvelleDemandeNotification;
 use App\Models\User;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class DemandeController extends Controller
 {
@@ -36,18 +37,34 @@ class DemandeController extends Controller
 
         $demande->save();
 
-        $response = [
-            "ResultInfo" => [
-                'Success' => true,
-                'ErrorMessage' => "",
-            ],
-            "ResultData" => [
-                'demande_id' => $demande->id,
-                'message' => 'Demande créée avec succès'
-            ]
-        ];
+        // Obtenir l'utilisateur authentifié
+        $client = auth()->user();
+
+        if (!$client) {
+            $response["ResultInfo"]["Success"] = false;
+            $response["ResultInfo"]["ErrorMessage"] = 'Utilisateur non authentifié.';
+            return response()->json($response, 401);
+        }
+
+        // Générer le token JWT à partir de l'utilisateur authentifié
+        $token = JWTAuth::fromUser($client);
+
+        // Créer la réponse JSON avec le token inclus
+            $response = [
+                "ResultInfo" => [
+                    'Success' => true,
+                    'ErrorMessage' => "",
+                ],
+                "ResultData" => [
+                    'demande_id' => $demande->id,
+                    'token' => $token, // Inclure le token ici
+                    'message' => 'Demande créée avec succès'
+                ]
+            ];
+
         return response()->json($response, 201);
     }
+
 
     public function selectOuvrier(Request $request)
     {
