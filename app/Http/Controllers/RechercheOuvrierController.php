@@ -12,6 +12,7 @@ class RechercheOuvrierController extends Controller
 {
     public function index(Request $request)
     {
+        //AAAA
         try {
             $query = User::query();
 
