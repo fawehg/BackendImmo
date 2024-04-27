@@ -1,11 +1,10 @@
 <?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
+use App\Models\User;
 
 class RechercheOuvrierController extends Controller
 {
@@ -28,15 +27,14 @@ class RechercheOuvrierController extends Controller
 
             $ouvriers = $query->get();
             
-            $user = auth()->user();
-            
-            if (!$user) {
-                $response["ResultInfo"]["Success"] = false;
-                $response["ResultInfo"]["ErrorMessage"] = 'Utilisateur non authentifié.';
-                return response()->json($response, 401);
+            // Vérifier si l'utilisateur est authentifié
+            $client = Auth::guard('client_api')->user();
+            if (!$client) {
+                return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
-            
-            $token = JWTAuth::fromUser($user);
+
+            // Générer le token JWT à partir de l'utilisateur authentifié
+            $token = JWTAuth::fromUser($client);
 
             return response()->json([
                 "ResultInfo" => [
