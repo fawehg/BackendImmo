@@ -2,43 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Demande;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Database\QueryException;
+use App\Models\User;
 
 class RechercheOuvrierController extends Controller
 {
     public function index(Request $request)
     {
+        //AAAA
         try {
-            // Requête pour récupérer les ouvriers qui correspondent aux critères
-            $query = User::whereHas( function($q) use ($request) {
-                $q->where('profession', $request->domaines)
-                  ->where('specialties', $request->specialites)
-                  ->where('ville', $request->city);
-            });
+            $query = User::query();
 
-            // Si un domaine est spécifié, filtrer également par domaine
-            if ($request->has('domaine_id')) {
-                $query->where('domaine_id', $request->domaine_id);
-            }
-
-            // Si une spécialité est spécifiée, filtrer également par spécialité
             if ($request->has('specialite_id')) {
                 $query->where('specialite_id', $request->specialite_id);
             }
 
-            // Filtrer également par ville de la table demandes
-            if ($request->has('ville')) {
-                $query->whereHas('demandes', function($q) use ($request) {
-                    $q->where('city', $request->ville);
-                });
+            if ($request->has('domaine_id')) {
+                $query->where('domaine_id', $request->domaine_id);
             }
 
-            // Récupérer les ouvriers filtrés
+            if ($request->has('ville')) {
+                $query->where('ville', $request->ville);
+            }
+
             $ouvriers = $query->get();
 
             // Vérifier si l'utilisateur est authentifié
