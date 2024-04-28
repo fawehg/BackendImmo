@@ -10,9 +10,8 @@ use App\Models\User;
 
 class RechercheOuvrierController extends Controller
 {
-    public function index(Request $request)
+    public function rechercherOuvriers(Request $request)
     {
-        //AAAA
         try {
             $query = User::query();
 
@@ -30,13 +29,11 @@ class RechercheOuvrierController extends Controller
 
             $ouvriers = $query->get();
 
-            // Vérifier si l'utilisateur est authentifié
             $client = Auth::guard('client_api')->user();
             if (!$client) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
 
-            // Générer le token JWT à partir de l'utilisateur authentifié
             $token = JWTAuth::fromUser($client);
 
             return response()->json([

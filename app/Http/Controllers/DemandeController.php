@@ -64,8 +64,9 @@ class DemandeController extends Controller
         $demande = Demande::findOrFail($demandeId);
         $ouvrier = User::findOrFail($ouvrierId);
 
-        $ouvrier->notify(new NouvelleDemandeNotification($demande));
-
+        $client = Auth::guard('client_api')->user();
+        $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
+        
         return response()->json(['message' => 'Notification envoyée à l\'ouvrier choisi']);
     }
 }
