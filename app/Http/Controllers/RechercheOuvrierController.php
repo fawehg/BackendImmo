@@ -14,28 +14,30 @@ class RechercheOuvrierController extends Controller
     {
         try {
             $query = User::query();
-
+    
             if ($request->has('specialite_id')) {
                 $query->where('specialite_id', $request->specialite_id);
             }
-
+    
             if ($request->has('domaine_id')) {
                 $query->where('domaine_id', $request->domaine_id);
             }
-
+    
             if ($request->has('ville')) {
                 $query->where('ville', $request->ville);
             }
-
+    
             $ouvriers = $query->get();
-
+    
             $client = Auth::guard('client_api')->user();
             if (!$client) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
-
+    
             $token = JWTAuth::fromUser($client);
-
+    
+            $demande_id = $request->input('demande_id', null);
+    
             return response()->json([
                 "ResultInfo" => [
                     'Success' => true,
@@ -44,6 +46,7 @@ class RechercheOuvrierController extends Controller
                 "ResultData" => [
                     'ouvriers' => $ouvriers,
                     'token' => $token,
+                    'demande_id' => $demande_id, 
                 ]
             ]);
         } catch (QueryException $e) {
