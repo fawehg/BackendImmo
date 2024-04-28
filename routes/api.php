@@ -38,7 +38,7 @@ Route::post('/logout', [ClientController::class, 'logout']);
 Route::post('/reset-password', [ClientController::class, 'resetPassword']);
 Route::post('/verify-reset-code', [ClientController::class, 'verifyResetCode']);
 Route::post('/demandes', [DemandeController::class, 'store']);
-Route::get('/ouvriers', [RechercheOuvrierController::class, 'index']);
+Route::get('/ouvriers', [RechercheOuvrierController::class, 'rechercherOuvriers']);
 Route::post('/demandes/select-ouvrier', [DemandeController::class, 'selectOuvrier']);
 
 
