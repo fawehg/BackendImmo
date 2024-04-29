@@ -54,22 +54,36 @@ class DemandeController extends Controller
     }
 
 
-    public function selectOuvrier(Request $request)
-    {
-        $request->validate([
-            'demande_id' => 'required|exists:demandes,id',
-            'ouvrier_id' => 'required|exists:users,id'
-        ]);
 
-        $demandeId = $request->input('demande_id');
-        $ouvrierId = $request->input('ouvrier_id');
+    
+public function selectOuvrier(Request $request)
+{
+    // Valider les données de la demande
+    $request->validate([
+        'domaines' => 'required|string', // Utiliser le même nom de champ que dans la méthode store
+        'specialites' => 'required|string',
+        'city' => 'required|string',
+        'date' => 'required|date',
+        'time' => 'required|date_format:H:i',
+        'description' => 'required|string',
+        'ouvrier_id' => 'required|exists:users,id'
+    ]);
 
-        $demande = Demande::findOrFail($demandeId);
-        $ouvrier = User::findOrFail($ouvrierId);
+    // Récupérer le client à partir du token
+    $client = Auth::guard('client_api')->user();
 
-        $client = Auth::guard('client_api')->user();
-        $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
-        
-        return response()->json(['message' => 'Notification envoyée à l\'ouvrier choisi']);
-    }
+    // Créer une demande avec les données de la requête
+    $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
+
+    // Enregistrer la demande
+
+    // Récupérer l'ouvrier sélectionné
+    $ouvrierId = $request->input('ouvrier_id');
+    $ouvrier = User::findOrFail($ouvrierId);
+
+    // Envoyer la notification à l'ouvrier
+    $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
+
+    return response()->json(['message' => 'Notification envoyée à l\'ouvrier choisi']);
+}
 }
