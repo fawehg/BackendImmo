@@ -67,7 +67,7 @@ class AuthController extends Controller
                 'joursDisponibilite' => $request->joursDisponibilite,
                 'heureDebut' => $request->heureDebut,
                 'heureFin' => $request->heureFin,
-                'numeroTelephone' => $request->numeroTelephone, // Ajout du champ numeroTelephone
+                'numeroTelephone' => $request->numeroTelephone, 
                 'image' => $imagePath, 
             ]);
             
