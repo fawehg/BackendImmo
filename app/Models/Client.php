@@ -19,6 +19,10 @@ class Client extends Authenticatable implements JWTSubject
         'adresse',
         'password',
     ];
+    public function demandes()
+    {
+        return $this->hasMany(Demande::class);
+    }
 
     protected $hidden = [
         'password',

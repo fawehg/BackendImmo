@@ -39,7 +39,7 @@ Route::post('/reset-password', [ClientController::class, 'resetPassword']);
 Route::post('/verify-reset-code', [ClientController::class, 'verifyResetCode']);
 Route::post('/demandes', [DemandeController::class, 'store']);
 Route::get('/ouvriers', [RechercheOuvrierController::class, 'rechercherOuvriers']);
-Route::post('/demandes/select-ouvrier', [DemandeController::class, 'selectOuvrier']);
+Route::post('/reserver-ouvrier', [DemandeController::class, 'selectOuvrier']);
 
 
 });

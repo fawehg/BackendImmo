@@ -16,8 +16,8 @@ class RechercheOuvrierController extends Controller
     {
         try {
             $request->validate([
-                'domaines' => 'required|string',
-                'city' => 'required|string'
+                'domaines' => 'string',
+                'city' => 'string'
             ]);
 
             $domaines = $request->input('domaines');
