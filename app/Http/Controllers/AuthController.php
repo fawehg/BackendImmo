@@ -34,8 +34,7 @@ class AuthController extends Controller
                 'password' => 'required|string',
                 'confirmationMotDePasse' => 'required|string|same:password',
                 'profession' => 'required|string',
-                'specialties' => 'array',
-                'joursDisponibilite' => 'array',
+              
                 'heureDebut' => 'required|string',
                 'heureFin' => 'required|string',
                 'numeroTelephone' => 'required|string', // Ajout du champ numeroTelephone
