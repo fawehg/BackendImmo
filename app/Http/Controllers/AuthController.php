@@ -30,7 +30,7 @@ class AuthController extends Controller
                 'prenom' => 'required|string',
                 'email' => 'required|email|unique:users',
                 'ville' => 'required|string',
-                'adresse' => 'string',
+                'adresse' => 'required|string',
                 'password' => 'required|string',
                 'confirmationMotDePasse' => 'required|string|same:password',
                 'profession' => 'required|string',
