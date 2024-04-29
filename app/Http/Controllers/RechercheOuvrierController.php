@@ -7,28 +7,32 @@ use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Database\QueryException;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use App\Models\Demande;
 
 class RechercheOuvrierController extends Controller
 {
     public function rechercherOuvriers(Request $request)
     {
         try {
-            $query = User::query();
-    
-            if ($request->has('specialite_id')) {
-                $query->where('specialite_id', $request->specialite_id);
-            }
-    
-            if ($request->has('domaine_id')) {
-                $query->where('domaine_id', $request->domaine_id);
-            }
-    
-            if ($request->has('ville')) {
-                $query->where('ville', $request->ville);
-            }
-    
-            $ouvriers = $query->get();
-    
+            $request->validate([
+                'domaines' => 'required|string',
+                'city' => 'required|string'
+            ]);
+
+            $domaines = $request->input('domaines');
+            $city = $request->input('city');
+
+            $ouvriers = DB::table('demandes')
+                        ->join('users', function ($join) {
+                            $join->on('demandes.domaines', '=', 'users.profession')
+                                 ->on('demandes.city', '=', 'users.ville');
+                        })
+                        ->where('demandes.domaines', $domaines)
+                        ->where('demandes.city', $city)
+                        ->select('users.*')
+                        ->get();
+                        
             $client = Auth::guard('client_api')->user();
             if (!$client) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);

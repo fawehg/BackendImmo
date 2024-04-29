@@ -8,6 +8,7 @@ use App\Notifications\NouvelleDemandeNotification;
 use App\Models\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Client;
 
 class DemandeController extends Controller
 {
@@ -45,6 +46,8 @@ class DemandeController extends Controller
             'ResultData' => [
                 'demande' => $demande,
                 'client_token' => $token,
+           'demande_id' => $demande->id, 
+
                 'message' => 'Demande créée avec succès'
             ]
         ], 201);
