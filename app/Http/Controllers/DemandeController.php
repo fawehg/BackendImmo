@@ -9,6 +9,7 @@ use App\Models\User;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Client;
+use App\Models\TravailDemander;
 
 class DemandeController extends Controller
 {
@@ -56,25 +57,56 @@ class DemandeController extends Controller
 
 
     
-public function selectOuvrier(Request $request)
-{
-
-
-    // Récupérer le client à partir du token
-    $client = Auth::guard('client_api')->user();
-
-    // Créer une demande avec les données de la requête
-    $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
-
-    // Enregistrer la demande
-
-    // Récupérer l'ouvrier sélectionné
-    $ouvrierId = $request->input('ouvrier_id');
-    $ouvrier = User::findOrFail($ouvrierId);
-
-    // Envoyer la notification à l'ouvrier
-    $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
-
-    return response()->json(['message' => 'Notification envoyée à l\'ouvrier choisi']);
-}
+    public function selectOuvrier(Request $request)
+    {
+        $client = Auth::guard('client_api')->user();
+        
+        if (!$client) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+    
+        $ouvrierId = $request->input('ouvrier_id');
+        $ouvrier = User::findOrFail($ouvrierId);
+    
+        if (!$ouvrier) {
+            return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+        }
+    
+        $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
+    
+        if (!$demande->save()) {
+            return response()->json(['error' => 'Impossible de créer la demande'], 500);
+        }
+    
+        $demande->client_id = $client->id;
+    
+        $demande->save();
+    
+        $travailDemander = new TravailDemander();
+        $travailDemander->client_id = $client->id;
+        $travailDemander->demande_id = $demande->id; 
+        $travailDemander->save();
+    
+        $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
+    
+        $clientInfo = [
+            'Nom du client' => $client->nom,
+            'Prénom du client' => $client->prenom,
+            'Adresse du client' => $client->adresse,
+            'Email du client' => $client->email,
+        ];
+    
+        $demandeInfo = [
+            'Domaines' => $demande->domaines,
+            'Spécialités' => $demande->specialites,
+            'Ville' => $demande->city,
+            'Description' => $demande->description,
+        ];
+    
+        return response()->json([
+            'message' => 'Notification envoyée à l\'ouvrier choisi',
+            'client' => $clientInfo,
+            'demande' => $demandeInfo
+        ]);
+    }
 }
