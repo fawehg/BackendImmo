@@ -17,19 +17,15 @@ class RechercheOuvrierController extends Controller
         try {
             $request->validate([
                 'domaines' => 'string',
-                'city' => 'string'
             ]);
 
             $domaines = $request->input('domaines');
-            $city = $request->input('city');
 
             $ouvriers = DB::table('demandes')
                         ->join('users', function ($join) {
-                            $join->on('demandes.domaines', '=', 'users.profession')
-                                 ->on('demandes.city', '=', 'users.ville');
+                            $join->on('demandes.domaines', '=', 'users.profession');
                         })
                         ->where('demandes.domaines', $domaines)
-                        ->where('demandes.city', $city)
                         ->select('users.*')
                         ->get();
                         
