@@ -58,16 +58,7 @@ class DemandeController extends Controller
     
 public function selectOuvrier(Request $request)
 {
-    // Valider les données de la demande
-    $request->validate([
-        'domaines' => 'required|string', // Utiliser le même nom de champ que dans la méthode store
-        'specialites' => 'required|string',
-        'city' => 'required|string',
-        'date' => 'required|date',
-        'time' => 'required|date_format:H:i',
-        'description' => 'required|string',
-        'ouvrier_id' => 'required|exists:users,id'
-    ]);
+
 
     // Récupérer le client à partir du token
     $client = Auth::guard('client_api')->user();
