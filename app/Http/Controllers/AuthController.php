@@ -346,5 +346,3 @@ public function logout(Request $request)
         }
     }
 }
-
-
