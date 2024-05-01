@@ -58,21 +58,20 @@ class DemandeController extends Controller
 
     
     public function selectOuvrier(Request $request)
-    {
-        $client = Auth::guard('client_api')->user();
-    
-        if (!$client) {
-            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
-        }
-    
-        // Assuming $demande is retrieved from the request or database
-        $demandeId = $request->input('demande_id');
+{
+    $client = Auth::guard('client_api')->user();
+
+    if (!$client) {
+        return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+    }
+
+    $demandeId = $request->input('demande_id');
+
+    try {
         $demande = Demande::findOrFail($demandeId);
-    
-        if (!$demande) {
-            return response()->json(['error' => 'Demande non trouvée'], 404);
-        }
-    
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json(['error' => 'Demande non trouvée'], 404);
+    }
         $travailDemander = new TravailDemander();
         $travailDemander->client_id = $client->id;
         $travailDemander->demande_id = $demande->id; 
