@@ -57,7 +57,7 @@ class DemandeController extends Controller
 
 
     
-    public function selectOuvrier(Request $request)
+    public function selectOuvrier(Request $request,$demande)
     {
         $client = Auth::guard('client_api')->user();
     
@@ -65,25 +65,8 @@ class DemandeController extends Controller
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
     
-        // Validate request data
-        $validatedData = $request->validate([
-            'domaines' => 'required', // Ensure 'domaines' field is present
-            'specialites' => 'required',
-            'city' => 'required',
-            'date' => 'required',
-            'time' => 'required',
-            'description' => 'required',
-        ]);
     
-        $demande = new Demande($validatedData);
-    
-        if (!$demande->save()) {
-            return response()->json(['error' => 'Impossible de créer la demande'], 500);
-        }
-    
-        $demande->client_id = $client->id;
-    
-        $demande->save();
+      
     
         $travailDemander = new TravailDemander();
         $travailDemander->client_id = $client->id;
