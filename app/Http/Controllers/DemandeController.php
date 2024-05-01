@@ -57,30 +57,34 @@ class DemandeController extends Controller
 
 
     
-    public function selectOuvrier(Request $request,$demande)
+    public function selectOuvrier(Request $request)
     {
-        $demande = Demande::findOrFail($demande);
-
         $client = Auth::guard('client_api')->user();
     
         if (!$client) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
     
+        // Assuming $demande is retrieved from the request or database
+        $demandeId = $request->input('demande_id');
+        $demande = Demande::findOrFail($demandeId);
     
-      
+        if (!$demande) {
+            return response()->json(['error' => 'Demande non trouvée'], 404);
+        }
     
         $travailDemander = new TravailDemander();
         $travailDemander->client_id = $client->id;
         $travailDemander->demande_id = $demande->id; 
         $travailDemander->save();
+    
         $ouvrierId = $request->input('ouvrier_id');
-    $ouvrier = User::findOrFail($ouvrierId);
-
-    if (!$ouvrier) {
-        return response()->json(['error' => 'Ouvrier non trouvé'], 404);
-    }
-
+        $ouvrier = User::findOrFail($ouvrierId);
+    
+        if (!$ouvrier) {
+            return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+        }
+    
         $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
     
         $clientInfo = [
@@ -103,7 +107,6 @@ class DemandeController extends Controller
             'demande' => $demandeInfo
         ]);
     }
-    
     public function travailDemander(Request $request)
     {
         $client = Auth::guard('client_api')->user();
