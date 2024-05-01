@@ -57,7 +57,7 @@ Route::group([
     Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
     Route::get('/profil', [AuthController::class, 'profil']);
     Route::put('/update-profil', [AuthController::class, 'mettreAJourProfil']);
-    Route::get('/reserver-ouvrier', [DemandeController::class, 'selectOuvrier']);
+    Route::get('/travail-demander', [DemandeController::class, 'travailDemander']);
 
 
 });
