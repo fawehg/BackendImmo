@@ -58,93 +58,75 @@ class DemandeController extends Controller
 
     
     public function selectOuvrier(Request $request)
-{
-    $client = Auth::guard('client_api')->user();
-
-    if (!$client) {
-        return response()->json(['error' => 'Utilisateur non authentifié'], 401);
-    }
-
-    $demandeId = $request->input('demande_id');
-
-    try {
-        $demande = Demande::findOrFail($demandeId);
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        return response()->json(['error' => 'Demande non trouvée'], 404);
-    }
-        $travailDemander = new TravailDemander();
-        $travailDemander->client_id = $client->id;
-        $travailDemander->demande_id = $demande->id; 
-        $travailDemander->save();
-    
-        $ouvrierId = $request->input('ouvrier_id');
-        $ouvrier = User::findOrFail($ouvrierId);
-    
-        if (!$ouvrier) {
-            return response()->json(['error' => 'Ouvrier non trouvé'], 404);
-        }
-    
-        $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
-    
-        $clientInfo = [
-            'Nom du client' => $client->nom,
-            'Prénom du client' => $client->prenom,
-            'Adresse du client' => $client->adresse,
-            'Email du client' => $client->email,
-        ];
-    
-        $demandeInfo = [
-            'Domaines' => $demande->domaines,
-            'Spécialités' => $demande->specialites,
-            'Ville' => $demande->city,
-            'Description' => $demande->description,
-        ];
-    
-        return response()->json([
-            'message' => 'Notification envoyée à louvrier choisi',
-            'client' => $clientInfo,
-            'demande' => $demandeInfo
-        ]);
-    }
-    public function travailDemander(Request $request)
     {
         $client = Auth::guard('client_api')->user();
-        
+    
         if (!$client) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
     
-        // Valider les données de la demande
-        $request->validate([
-            'domaines' => 'required|string',
-            'specialites' => 'required|string',
-            'city' => 'required|string',
-            'date' => 'required|date',
-            'time' => 'required|date_format:H:i',
-            'description' => 'required|string',
-        ]);
+        // Récupérer la demande depuis la base de données
+        $demande = Demande::first(); // Vous pouvez ajouter des conditions de recherche ici si nécessaire
     
-        // Créer une demande avec les données de la requête
-        $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
-    
-        // Vérifier si la demande est créée avec succès
-        if (!$demande->save()) {
-            return response()->json(['error' => 'Impossible de créer la demande'], 500);
+        if (!$demande) {
+            return response()->json(['error' => 'Demande non trouvée'], 404);
         }
     
-        // Assigner l'ID du client à la demande
-        $demande->client_id = $client->id;
+            $travailDemander = new TravailDemander();
+            $travailDemander->client_id = $client->id;
+            $travailDemander->demande_id = $demande->id; 
+            $travailDemander->save();
+        
+            $ouvrierId = $request->input('ouvrier_id');
+            $ouvrier = User::findOrFail($ouvrierId);
+        
+            if (!$ouvrier) {
+                return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+            }
+        
+            $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
+        
+            $clientInfo = [
+                'Nom du client' => $client->nom,
+                'Prénom du client' => $client->prenom,
+                'Adresse du client' => $client->adresse,
+                'Email du client' => $client->email,
+            ];
+        
+            $demandeInfo = [
+                'Domaines' => $demande->domaines,
+                'Spécialités' => $demande->specialites,
+                'Ville' => $demande->city,
+                'Description' => $demande->description,
+            ];
+        
+            return response()->json([
+                'message' => 'Notification envoyée à louvrier choisi',
+                'client' => $clientInfo,
+                'demande' => $demandeInfo
+            ]);
+        }
+    public function travailDemander(Request $request)
+    {
+        // Récupérer la demande depuis la base de données
+        $travailDemander = TravailDemander::first(); // Vous pouvez ajouter des conditions de recherche ici si nécessaire
     
-        // Enregistrer la demande
-        $demande->save();
+        if (!$travailDemander) {
+            return response()->json(['error' => 'Travail non trouvé'], 404);
+        }
     
-        // Enregistrer la relation entre le client et la demande dans la table travaildemander
-        $travailDemander = new TravailDemander();
-        $travailDemander->client_id = $client->id;
-        $travailDemander->demande_id = $demande->id; 
-        $travailDemander->save();
+        // Accéder aux informations du client via la relation
+        $client = $travailDemander->client;
     
-        // Récupérer les informations du client et de la demande
+        // Accéder aux informations de la demande via la relation
+        $demande = $travailDemander->demande;
+    
+        // Vérifier si le client ou la demande est introuvable
+        if (!$client || !$demande) {
+            return response()->json(['error' => 'Client ou demande non trouvé'], 404);
+        }
+    
+        // Informations supplémentaires du client
         $clientInfo = [
             'Nom du client' => $client->nom,
             'Prénom du client' => $client->prenom,
@@ -152,6 +134,7 @@ class DemandeController extends Controller
             'Email du client' => $client->email,
         ];
     
+        // Informations supplémentaires de la demande
         $demandeInfo = [
             'Domaines' => $demande->domaines,
             'Spécialités' => $demande->specialites,
@@ -159,9 +142,11 @@ class DemandeController extends Controller
             'Description' => $demande->description,
         ];
     
+        // Retourner les informations du client, de la demande et du travail demandé
         return response()->json([
             'client' => $clientInfo,
-            'demande' => $demandeInfo
+            'demande' => $demandeInfo,
+            'travailDemander' => $travailDemander
         ]);
     }
     
