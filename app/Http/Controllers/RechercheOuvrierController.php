@@ -15,16 +15,13 @@ class RechercheOuvrierController extends Controller
     public function rechercherOuvriers(Request $request)
     {
         try {
-            // Récupérer l'utilisateur client actuel
             $client = Auth::guard('client_api')->user();
             if (!$client) {
                 return response()->json(['message' => 'Utilisateur non authentifié.'], 401);
             }
     
-            // Récupérer l'ID de la dernière demande du client
             $demande_id = Demande::where('user_id', $client->id)->latest()->value('id');
     
-            // Recherche des ouvriers en fonction des critères fournis
             $query = User::query();
     
             if ($request->has('specialite_id')) {
@@ -41,7 +38,6 @@ class RechercheOuvrierController extends Controller
     
             $ouvriers = $query->get();
     
-            // Récupérer le token JWT
             $token = JWTAuth::fromUser($client);
     
             return response()->json([
@@ -52,7 +48,7 @@ class RechercheOuvrierController extends Controller
                 "ResultData" => [
                     'ouvriers' => $ouvriers,
                     'token' => $token,
-                    'demande_id' => $demande_id // Inclure l'ID de la demande dans la réponse
+                    'demande_id' => $demande_id 
                 ]
             ]);
         } catch (QueryException $e) {
