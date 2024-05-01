@@ -59,6 +59,8 @@ class DemandeController extends Controller
     
     public function selectOuvrier(Request $request,$demande)
     {
+        $demande = Demande::findOrFail($demande);
+
         $client = Auth::guard('client_api')->user();
     
         if (!$client) {
