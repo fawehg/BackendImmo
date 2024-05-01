@@ -58,6 +58,80 @@ class DemandeController extends Controller
 
     
     public function selectOuvrier(Request $request)
+{
+    // Retrieve authenticated client
+    $client = Auth::guard('client_api')->user();
+
+    if (!$client) {
+        return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+    }
+
+    // Validate request data
+    $validatedData = $request->validate([
+        'domaines' => 'required', // Ensure 'domaines' field is present
+        'specialites' => 'required',
+        'city' => 'required',
+        'date' => 'required',
+        'time' => 'required',
+        'description' => 'required',
+        'ouvrier_id' => 'required', // Assuming 'ouvrier_id' is required in the request
+    ]);
+
+    // Retrieve selected worker
+    $ouvrierId = $validatedData['ouvrier_id'];
+    $ouvrier = User::findOrFail($ouvrierId);
+
+    // Check if worker is found
+    if (!$ouvrier) {
+        return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+    }
+
+    // Create a new demand using the validated data
+    $demande = new Demande($validatedData);
+
+    // Save the demand
+    if (!$demande->save()) {
+        return response()->json(['error' => 'Impossible de créer la demande'], 500);
+    }
+
+    // Assign the client ID to the demand
+    $demande->client_id = $client->id;
+    $demande->save();
+
+    // Save the relation between the client and the demand in the 'travaildemander' table
+    $travailDemander = new TravailDemander();
+    $travailDemander->client_id = $client->id;
+    $travailDemander->demande_id = $demande->id;
+    $travailDemander->save();
+
+    // Notify the selected worker about the new demand
+    $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
+
+    // Prepare client and demand information for response
+    $clientInfo = [
+        'Nom du client' => $client->nom,
+        'Prénom du client' => $client->prenom,
+        'Adresse du client' => $client->adresse,
+        'Email du client' => $client->email,
+    ];
+
+    $demandeInfo = [
+        'Domaines' => $demande->domaines,
+        'Spécialités' => $demande->specialites,
+        'Ville' => $demande->city,
+        'Description' => $demande->description,
+    ];
+
+    // Return response with client and demand information
+    return response()->json([
+        'message' => 'Notification envoyée à l\'ouvrier choisi',
+        'client' => $clientInfo,
+        'demande' => $demandeInfo
+    ]);
+}
+
+    
+    public function travailDemander(Request $request)
     {
         $client = Auth::guard('client_api')->user();
         
@@ -65,30 +139,37 @@ class DemandeController extends Controller
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
     
-        $ouvrierId = $request->input('ouvrier_id');
-        $ouvrier = User::findOrFail($ouvrierId);
+        // Valider les données de la demande
+        $request->validate([
+            'domaines' => 'required|string',
+            'specialites' => 'required|string',
+            'city' => 'required|string',
+            'date' => 'required|date',
+            'time' => 'required|date_format:H:i',
+            'description' => 'required|string',
+        ]);
     
-        if (!$ouvrier) {
-            return response()->json(['error' => 'Ouvrier non trouvé'], 404);
-        }
-    
+        // Créer une demande avec les données de la requête
         $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
     
+        // Vérifier si la demande est créée avec succès
         if (!$demande->save()) {
             return response()->json(['error' => 'Impossible de créer la demande'], 500);
         }
     
+        // Assigner l'ID du client à la demande
         $demande->client_id = $client->id;
     
+        // Enregistrer la demande
         $demande->save();
     
+        // Enregistrer la relation entre le client et la demande dans la table travaildemander
         $travailDemander = new TravailDemander();
         $travailDemander->client_id = $client->id;
         $travailDemander->demande_id = $demande->id; 
         $travailDemander->save();
     
-        $ouvrier->notify(new NouvelleDemandeNotification($demande, $client));
-    
+        // Récupérer les informations du client et de la demande
         $clientInfo = [
             'Nom du client' => $client->nom,
             'Prénom du client' => $client->prenom,
@@ -104,9 +185,9 @@ class DemandeController extends Controller
         ];
     
         return response()->json([
-            'message' => 'Notification envoyée à l\'ouvrier choisi',
             'client' => $clientInfo,
             'demande' => $demandeInfo
         ]);
     }
+    
 }
