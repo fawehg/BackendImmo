@@ -37,7 +37,7 @@ class AuthController extends Controller
               
                 'heureDebut' => 'required|string',
                 'heureFin' => 'required|string',
-                'numeroTelephone' => 'required|string', // Ajout du champ numeroTelephone
+                'numeroTelephone' => 'required|string', 
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|', 
             ]);
         

@@ -65,8 +65,7 @@ class DemandeController extends Controller
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
     
-        // Récupérer la demande depuis la base de données
-        $demande = Demande::first(); // Vous pouvez ajouter des conditions de recherche ici si nécessaire
+        $demande = Demande::first(); 
     
         if (!$demande) {
             return response()->json(['error' => 'Demande non trouvée'], 404);
@@ -98,6 +97,9 @@ class DemandeController extends Controller
                 'Spécialités' => $demande->specialites,
                 'Ville' => $demande->city,
                 'Description' => $demande->description,
+                'date' => $demande->date,
+                'heure' => $demande->time,
+
             ];
         
             return response()->json([
@@ -108,25 +110,20 @@ class DemandeController extends Controller
         }
     public function travailDemander(Request $request)
     {
-        // Récupérer la demande depuis la base de données
-        $travailDemander = TravailDemander::first(); // Vous pouvez ajouter des conditions de recherche ici si nécessaire
+        $travailDemander = TravailDemander::first();
     
         if (!$travailDemander) {
             return response()->json(['error' => 'Travail non trouvé'], 404);
         }
     
-        // Accéder aux informations du client via la relation
         $client = $travailDemander->client;
     
-        // Accéder aux informations de la demande via la relation
         $demande = $travailDemander->demande;
     
-        // Vérifier si le client ou la demande est introuvable
         if (!$client || !$demande) {
             return response()->json(['error' => 'Client ou demande non trouvé'], 404);
         }
     
-        // Informations supplémentaires du client
         $clientInfo = [
             'Nom du client' => $client->nom,
             'Prénom du client' => $client->prenom,
@@ -134,7 +131,6 @@ class DemandeController extends Controller
             'Email du client' => $client->email,
         ];
     
-        // Informations supplémentaires de la demande
         $demandeInfo = [
             'Domaines' => $demande->domaines,
             'Spécialités' => $demande->specialites,
@@ -142,7 +138,6 @@ class DemandeController extends Controller
             'Description' => $demande->description,
         ];
     
-        // Retourner les informations du client, de la demande et du travail demandé
         return response()->json([
             'client' => $clientInfo,
             'demande' => $demandeInfo,
