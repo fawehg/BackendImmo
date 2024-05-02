@@ -114,47 +114,54 @@ $travailDemander->save();
                 'demande' => $demandeInfo
             ]);
         }
-    public function travailDemander(Request $request)
-    {
-        $ouvrierId = $request->input('ouvrier_id');
-        $ouvrier = User::findOrFail($ouvrierId);
-        if (!$ouvrier) {
-            return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+        public function travailDemander(Request $request)
+        {
+            $ouvrierId = $request->input('ouvrier_id');
+            $ouvrier = User::findOrFail($ouvrierId);
+        
+            if (!$ouvrier) {
+                return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+            }
+        
+            $travailDemanders = TravailDemander::all(); // Récupérer tous les enregistrements
+        
+            if ($travailDemanders->isEmpty()) {
+                return response()->json(['error' => 'Aucun travail trouvé'], 404);
+            }
+        
+            $travails = [];
+        
+            foreach ($travailDemanders as $travailDemander) {
+                $client = $travailDemander->client;
+                $demande = $travailDemander->demande;
+        
+                if (!$client || !$demande) {
+                    return response()->json(['error' => 'Client ou demande non trouvé'], 404);
+                }
+        
+                $clientInfo = [
+                    'Nom du client' => $client->nom,
+                    'Prénom du client' => $client->prenom,
+                    'Adresse du client' => $client->adresse,
+                    'Email du client' => $client->email,
+                ];
+        
+                $demandeInfo = [
+                    'Domaines' => $demande->domaines,
+                    'Spécialités' => $demande->specialites,
+                    'Ville' => $demande->city,
+                    'Description' => $demande->description,
+                    'date' => $demande->date,
+                    'heure' => $demande->time,
+                ];
+        
+                $travails[] = [
+                    'client' => $clientInfo,
+                    'demande' => $demandeInfo,
+                ];
+            }
+        
+            return response()->json($travails);
         }
-        $travailDemander = TravailDemander::all();
-    
-        if (!$travailDemander) {
-            return response()->json(['error' => 'Travail non trouvé'], 404);
-        }
-    
-        $client = $travailDemander->client;
-    
-        $demande = $travailDemander->demande;
-    
-        if (!$client || !$demande) {
-            return response()->json(['error' => 'Client ou demande non trouvé'], 404);
-        }
-    
-        $clientInfo = [
-            'Nom du client' => $client->nom,
-            'Prénom du client' => $client->prenom,
-            'Adresse du client' => $client->adresse,
-            'Email du client' => $client->email,
-        ];
-    
-        $demandeInfo = [
-            'Domaines' => $demande->domaines,
-            'Spécialités' => $demande->specialites,
-            'Ville' => $demande->city,
-            'Description' => $demande->description,
-            'date' => $demande->date,
-            'heure' => $demande->time,
-        ];
-    
-        return response()->json([
-            'client' => $clientInfo,
-            'demande' => $demandeInfo,
-        ]);
-    }
-    
+        
 }
