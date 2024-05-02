@@ -115,49 +115,50 @@ $travailDemander->save();
             ]);
         }
         public function travailDemander(Request $request)
-{          
-    $ouvrierId = $request->input('ouvrier_id');
-$ouvrier = User::findOrFail($ouvrierId);
-    // Récupérer tous les travaux demandés avec les informations sur les clients et les demandes associées
-    $travailDemanders = TravailDemander::with('client', 'demande')->get();
-
-    if ($travailDemanders->isEmpty()) {
-        return response()->json(['error' => 'Aucun travail trouvé'], 404);
-    }
-
-    $travails = [];
-
-    foreach ($travailDemanders as $travailDemander) {
-        $client = $travailDemander->client;
-        $demande = $travailDemander->demande;
-
-        // Vérifier si le client et la demande existent
-        if (!$client || !$demande) {
-            return response()->json(['error' => 'Client ou demande non trouvé'], 404);
+        {
+            $ouvrierId = $request->input('ouvrier_id');
+            $ouvrier = User::find($ouvrierId);
+        
+            if (!$ouvrier) {
+                return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+            }
+        
+            $travailDemanders = TravailDemander::with('client', 'demande')->get();
+        
+            if ($travailDemanders->isEmpty()) {
+                return response()->json(['error' => 'Aucun travail trouvé'], 404);
+            }
+        
+            $travails = [];
+        
+            foreach ($travailDemanders as $travailDemander) {
+                $client = $travailDemander->client;
+                $demande = $travailDemander->demande;
+        
+                if (!$client || !$demande) {
+                    return response()->json(['error' => 'Client ou demande non trouvé'], 404);
+                }
+        
+                $travails[] = [
+                    'client' => [
+                        'Nom' => $client->nom,
+                        'Prénom' => $client->prenom,
+                        'Adresse' => $client->adresse,
+                        'Email' => $client->email,
+                    ],
+                    'demande' => [
+                        'Domaines' => $demande->domaines,
+                        'Spécialités' => $demande->specialites,
+                        'Ville' => $demande->city,
+                        'Description' => $demande->description,
+                        'Date' => $demande->date,
+                        'Heure' => $demande->time,
+                    ],
+                ];
+            }
+        
+            return response()->json($travails);
         }
-
-        // Créer un tableau contenant les informations sur le client et la demande
-        $travails[] = [
-            'client' => [
-                'Nom' => $client->nom,
-                'Prénom' => $client->prenom,
-                'Adresse' => $client->adresse,
-                'Email' => $client->email,
-            ],
-            'demande' => [
-                'Domaines' => $demande->domaines,
-                'Spécialités' => $demande->specialites,
-                'Ville' => $demande->city,
-                'Description' => $demande->description,
-                'Date' => $demande->date,
-                'Heure' => $demande->time,
-            ],
-        ];
-    }
-
-    // Retourner la liste des travaux demandés avec les informations sur les clients et les demandes associées
-    return response()->json($travails);
-}
-
+        
         
 }
