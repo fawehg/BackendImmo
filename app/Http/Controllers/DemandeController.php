@@ -116,7 +116,7 @@ $travailDemander->save();
         }
     public function travailDemander(Request $request)
     {
-        $travailDemander = TravailDemander::first();
+        $travailDemander = TravailDemander::all();
     
         if (!$travailDemander) {
             return response()->json(['error' => 'Travail non trouvé'], 404);
