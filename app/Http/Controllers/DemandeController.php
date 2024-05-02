@@ -111,7 +111,8 @@ $travailDemander->save();
             return response()->json([
                 'message' => 'Notification envoyée à louvrier choisi',
                 'client' => $clientInfo,
-                'demande' => $demandeInfo
+                'demande' => $demandeInfo,
+                'ouvrier_id'=>$ouvrierId
             ]);
         }
         public function travailDemander(Request $request)
