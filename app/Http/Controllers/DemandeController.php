@@ -117,12 +117,9 @@ $travailDemander->save();
         }
         public function travailDemander(Request $request)
         {
-            $ouvrierId = $request->input('ouvrier_id');
-            $ouvrier = User::find($ouvrierId);
+     
         
-            if (!$ouvrier) {
-                return response()->json(['error' => 'Ouvrier non trouvé'], 404);
-            }
+           
         
             $travailDemanders = TravailDemander::with('client', 'demande')->get();
         
