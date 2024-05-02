@@ -82,7 +82,7 @@ if (!$ouvrier) {
 $travailDemander = new TravailDemander();
 $travailDemander->client_id = $client->id;
 $travailDemander->demande_id = $demande->id; 
-$travailDemander->ouvrier_id = $ouvrierId; // Utilisez le nom de colonne correct ici
+$travailDemander->ouvrier_id = $ouvrierId; 
 $travailDemander->save();
 
         
@@ -116,6 +116,11 @@ $travailDemander->save();
         }
     public function travailDemander(Request $request)
     {
+        $ouvrierId = $request->input('ouvrier_id');
+        $ouvrier = User::findOrFail($ouvrierId);
+        if (!$ouvrier) {
+            return response()->json(['error' => 'Ouvrier non trouvé'], 404);
+        }
         $travailDemander = TravailDemander::all();
     
         if (!$travailDemander) {
