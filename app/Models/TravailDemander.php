@@ -17,9 +17,9 @@ class TravailDemander extends Model
     {
         return $this->belongsTo(Demande::class);
     }
-    public function user()
-{
-    return $this->belongsTo(User::class);
-}
 
+    public function ouvrier()
+    {
+        return $this->belongsTo(User::class, 'ouvrier_id'); // Ajoutez la relation avec l'ouvrier (utilisateur)
+    }
 }
