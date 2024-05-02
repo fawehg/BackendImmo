@@ -71,13 +71,16 @@ class DemandeController extends Controller
             return response()->json(['error' => 'Demande non trouvée'], 404);
         }
     
-            $travailDemander = new TravailDemander();
-            $travailDemander->client_id = $client->id;
-            $travailDemander->demande_id = $demande->id; 
-            $travailDemander->save();
+          
         
             $ouvrierId = $request->input('ouvrier_id');
             $ouvrier = User::findOrFail($ouvrierId);
+            $travailDemander = new TravailDemander();
+            $travailDemander->client_id = $client->id;
+            $travailDemander->demande_id = $demande->id; 
+            $travailDemander->ouvrierId= $ouvrierId; 
+
+            $travailDemander->save();
         
             if (!$ouvrier) {
                 return response()->json(['error' => 'Ouvrier non trouvé'], 404);
@@ -97,8 +100,7 @@ class DemandeController extends Controller
                 'Spécialités' => $demande->specialites,
                 'Ville' => $demande->city,
                 'Description' => $demande->description,
-                'date' => $demande->date,
-                'heure' => $demande->time,
+        
 
             ];
         
@@ -136,12 +138,13 @@ class DemandeController extends Controller
             'Spécialités' => $demande->specialites,
             'Ville' => $demande->city,
             'Description' => $demande->description,
+            'date' => $demande->date,
+            'heure' => $demande->time,
         ];
     
         return response()->json([
             'client' => $clientInfo,
             'demande' => $demandeInfo,
-            'travailDemander' => $travailDemander
         ]);
     }
     
