@@ -58,6 +58,7 @@ Route::group([
     Route::get('/profil', [AuthController::class, 'profil']);
     Route::put('/update-profil', [AuthController::class, 'mettreAJourProfil']);
     Route::get('/travail-demander', [DemandeController::class, 'travailDemander']);
+    Route::post('/confirm-demande', [DemandeController::class,'confirmDemande']);
 
 
 });
