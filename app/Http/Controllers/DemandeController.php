@@ -10,6 +10,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Client;
 use App\Models\TravailDemander;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AcceptanceNotification;
 
 class DemandeController extends Controller
 {
@@ -157,6 +159,23 @@ $travailDemander->save();
         
             return response()->json($travails);
         }
-        
+        public function confirmDemande(Request $request)
+{
+    $demandeId = $request->input('demandeId');
+    
+    // Logique pour confirmer la demande...
+    
+    // Envoi de l'email au client
+    $demande = Demande::find($demandeId);
+    $client = $demande->client;
+    
+if ($client && $client->email) {
+    Mail::to($client->email)->send(new AcceptanceNotification($client->nom, $demande->description));
+} else {
+    // Gérer le cas où le client ou son email sont null
+}
+    
+    return response()->json(['message' => 'Demande confirmée avec succès']);
+}
         
 }
