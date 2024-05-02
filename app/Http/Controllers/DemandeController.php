@@ -34,6 +34,7 @@ class DemandeController extends Controller
         }
 
         $demande = new Demande($request->only('domaines', 'specialites', 'city', 'date', 'time', 'description'));
+        $demande->client_id = $client->id;
 
         if ($request->hasFile('image')) {
             $demande->image = $request->file('image')->store('uploads', 'public');
