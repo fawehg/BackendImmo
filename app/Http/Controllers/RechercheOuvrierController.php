@@ -62,5 +62,5 @@ class RechercheOuvrierController extends Controller
         }
     }
     //KHALILL YEE BHYYM
-    
+    //MOETAZ YA BHIM 
 }
