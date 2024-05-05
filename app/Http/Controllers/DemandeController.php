@@ -185,5 +185,42 @@ $travailDemander->save();
 
             return response()->json(['message' => 'Demande confirmée avec succès']);
         }
-
+        public function validation(Request $request)
+        {
+            $ouvrierId = $request->input('ouvrier_id');
+        
+            $travailDemander = TravailDemander::where('ouvrier_id', $ouvrierId)->first();
+        
+            if (!$travailDemander) {
+                return response()->json(['error' => 'Aucun travail trouvé pour cet ouvrier'], 404);
+            }
+        
+            $ouvrier = $travailDemander->ouvrier;
+            $demande = $travailDemander->demande;
+        
+            if (!$ouvrier || !$demande) {
+                return response()->json(['error' => 'Ouvrier ou demande non trouvé'], 404);
+            }
+        
+            $travail = [
+                'ouvrier' => [
+                    'Nom' => $ouvrier->nom,
+                    'Prénom' => $ouvrier->prenom,
+                    'Adresse' => $ouvrier->adresse,
+                    'Email' => $ouvrier->email,
+                ],
+                'demande' => [
+                    'Domaines' => $demande->domaines,
+                    'Spécialités' => $demande->specialites,
+                    'Ville' => $demande->city,
+                    'Description' => $demande->description,
+                    'Date' => $demande->date,
+                    'Heure' => $demande->time,
+                ],
+            ];
+        
+            return response()->json($travail);
+        }
+        
+        
 }
