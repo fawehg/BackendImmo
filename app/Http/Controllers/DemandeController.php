@@ -119,6 +119,9 @@ $travailDemander->save();
             ]);
         }
 
+
+
+
         public function travailDemander(Request $request)
         {
      
@@ -158,21 +161,29 @@ $travailDemander->save();
         
             return response()->json($travails);
         }
- 
-        public function confirmDemande(Request $request)
-{
-    $demandeId = $request->input('demandeId');
-   
-    $demande = Demande::find($demandeId);
-    $client = $demande->client;
-    
-if ($client && $client->email) {
-    Mail::to($client->email)->send(new AcceptanceNotification($client->nom, $demande->description));
-} else {
-}
-    
-    return response()->json(['message' => 'Demande confirmée avec succès']);
-}
 
+
+
+
+
+
+
+
+        
+        public function confirmDemande(Request $request)
+        {
+            $demandeId = $request->input('demandeId');
+
+            $demande = Demande::find($demandeId);
+
+            $travailDemander = TravailDemander::with('client', 'demande')->where('demande_id', $demandeId)->first();
+
+            if ($travailDemander && $travailDemander->client && $travailDemander->client->email) {
+                Mail::to($travailDemander->client->email)->send(new AcceptanceNotification($travailDemander->client->nom, $demande->description));
+            } else {
+            }
+
+            return response()->json(['message' => 'Demande confirmée avec succès']);
+        }
 
 }
