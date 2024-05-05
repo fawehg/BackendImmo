@@ -119,9 +119,6 @@ $travailDemander->save();
             ]);
         }
 
-
-
-
         public function travailDemander(Request $request)
         {
      
@@ -161,15 +158,7 @@ $travailDemander->save();
         
             return response()->json($travails);
         }
-
-
-
-
-
-
-
-
-        
+ 
         public function confirmDemande(Request $request)
 {
     $demandeId = $request->input('demandeId');

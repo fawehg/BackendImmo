@@ -13,6 +13,7 @@ use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\EspaceProController;
 use App\Http\Controllers\RechercheOuvrierController;
 
+
 Route::group([
     'middleware' => 'api',
     'prefix' => 'admin'
