@@ -3,102 +3,78 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Client;
+use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Client;
 use App\Mail\ResetPasswordCode;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Storage; 
 use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
-    public function signup(Request $request)
-{
-    $request->validate([
-        'nom' => 'required|string',
-        'prenom' => 'required|string',
-        'ville' => 'required|string',
-        'adresse' => 'required|string',
-        'email' => 'required|email|unique:clients',
-        'password' => 'required|string|min:6',
-    ]);
+    // Inscription d'un client
+    public function register(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string',
+            'prenom' => 'required|string',
+            'ville' => 'required|string',
+            'adresse' => 'required|string',
+            'email' => 'required|email|unique:clients',
+            'password' => 'required|confirmed',
+        ]);
 
-    $client = new Client([
-        'nom' => $request->nom,
-        'prenom' => $request->prenom,
-        'ville' => $request->ville,
-        'adresse' => $request->adresse,
-        'email' => $request->email,
-        'password' => bcrypt($request->password),
-    ]);
+        $client = Client::create([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'ville' => $request->ville,
+            'adresse' => $request->adresse,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
 
-    $client->save();
+        return response()->json(['message' => 'Client enregistré avec succès', 'client' => $client], 201);
+    }
 
-    $token = JWTAuth::fromUser($client);
+    // Connexion d'un client
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-    $response = [
-        "ResultInfo" => [
-            'Success' => true,
-            'ErrorMessage' => "",
-        ],
-        "ResultData" => [
+        $credentials = $request->only('email', 'password');
+
+        if (!$token = auth('clients')->attempt($credentials)) {
+            return response()->json(['message' => 'Identifiants incorrects'], 401);
+        }
+
+        return response()->json([
             'token' => $token,
-            'client' => $client,
-        ]
-    ];
-
-    return response()->json($response, 201);
-}
-
-public function signin(Request $request)
-{
-    $credentials = $request->only('email', 'password');
-    $response = [
-        "ResultInfo" => [
-            'Success' => false,
-            'ErrorMessage' => "",
-        ],
-        "ResultData" => []
-    ];
-
-    if (Auth::guard('client_api')->attempt($credentials)) {
-        $client = Auth::guard('client_api')->user();
-        $token = JWTAuth::fromUser($client);
-        $response["ResultInfo"]["Success"] = true;
-        $response["ResultData"]['token'] = $token;
-        return response()->json([ 'Success' => true, 'ErrorMessage' => '', 'ResultData' => ['token' => $token],'client' => $client]);
-
-    } else {
-        return response()->json(['message' => 'Adresse e-mail ou mot de passe incorrect.'], 401);
-    }
-}
-
-
-    public function show($id)
-    {
-        $client = Client::findOrFail($id);
-
-        return response()->json($client);
+            'client' => auth('clients')->user(),
+        ]);
     }
 
-    public function update(Request $request, $id)
+    // Récupérer les informations du client connecté
+    public function me()
     {
-        $user = Client::findOrFail($id);
-        $user->update($request->all());
-        return response()->json($user);
+        return response()->json(auth('clients')->user());
+    }
+
+    // Déconnexion du client
+    public function logout()
+    {
+        auth('clients')->logout();
+        return response()->json(['message' => 'Déconnexion réussie']);
     }
     public function resetPassword(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'email' => 'required|email',
         ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['message' => $validator->errors()], 400);
-        }
     
         $client = Client::where('email', $request->email)->first();
     
@@ -110,7 +86,7 @@ public function signin(Request $request)
                 ],
                 "ResultData" => []
             ], 404);
-                    }
+        }
     
         $resetCode = mt_rand(100000, 999999);
     
@@ -122,7 +98,7 @@ public function signin(Request $request)
     
         Mail::to($client->email)->send(new ResetPasswordCode($resetCode));
     
-        $response = [
+        return response()->json([
             "ResultInfo" => [
                 'Success' => true,
                 'ErrorMessage' => "",
@@ -130,80 +106,82 @@ public function signin(Request $request)
             "ResultData" => [
                 'message' => 'Un code de réinitialisation a été envoyé à votre adresse e-mail.'
             ]
-        ];
-    
-        return response()->json($response, 200);
-    }
-    
-    public function verifyResetCode(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'code' => 'required|digits:6',
-            'password' => 'required|string|min:6',
         ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['message' => $validator->errors()], 400);
-        }
-    
-        $reset = DB::table('password_resets')
-            ->where('email', $request->email)
-            ->where('token', $request->code)
-            ->first();
-    
-        if (!$reset) {
-            return response()->json([
-                "ResultInfo" => [
-                    'Success' => false,
-                    'ErrorMessage' => "Le code de réinitialisation est invalide.",
-                ],
-                "ResultData" => []
-            ], 400);        }
-    
-        $client = Client::where('email', $request->email)->first();
-        $client->password = Hash::make($request->password);
-        $client->save();
-    
-        DB::table('password_resets')->where('email', $request->email)->delete();
-    
-        $response = [
-            "ResultInfo" => [
-                'Success' => true,
-                'ErrorMessage' => "",
-            ],
-            "ResultData" => [
-                'message' => 'Le mot de passe a été réinitialisé avec succès.'
-            ]
-        ];
-    
-        return response()->json($response, 200);
     }
-    public function logout(Request $request)
+
+public function verifyResetCode(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'code' => 'required|digits:6',
+        'password' => 'required|string|min:6',
+    ]);
+
+    // Vérifier si le code de réinitialisation est valide
+    $reset = DB::table('password_resets')
+        ->where('email', $request->email)
+        ->where('token', $request->code)
+        ->first();
+
+    if (!$reset) {
+        return response()->json([
+            "ResultInfo" => [
+                'Success' => false,
+                'ErrorMessage' => "Le code de réinitialisation est invalide.",
+            ],
+            "ResultData" => []
+        ], 400);
+    }
+
+    // Remplacer User par Client
+    $client = Client::where('email', $request->email)->first();
+    $client->password = Hash::make($request->password);
+    $client->save();
+
+    // Supprimer le code de réinitialisation après utilisation
+    DB::table('password_resets')->where('email', $request->email)->delete();
+
+    return response()->json([
+        "ResultInfo" => [
+            'Success' => true,
+            'ErrorMessage' => "",
+        ],
+        "ResultData" => [
+            'message' => 'Le mot de passe a été réinitialisé avec succès.'
+        ]
+    ]);
+}
+    // Afficher le profil
+    public function show()
     {
-        try {
-            JWTAuth::invalidate(JWTAuth::getToken());
+        $client = Auth::guard('clients')->user();
+        return response()->json($client);
+    }
 
-            $response = [
-                "ResultInfo" => [
-                    'Success' => true,
-                    'ErrorMessage' => "",
-                ],
-                "ResultData" => [
-                    'message' => 'Déconnexion réussie.'
-                ]
-            ];
+    // Mettre à jour le profil
+    public function update(Request $request)
+    {
+        $client = Auth::guard('clients')->user();
 
-            return response()->json($response, 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                "ResultInfo" => [
-                    'Success' => false,
-                    'ErrorMessage' => "Une erreur s'est produite lors de la déconnexion.",
-                ],
-                "ResultData" => []
-            ], 500);
-        }
+        $request->validate([
+            'nom' => 'sometimes|string',
+            'prenom' => 'sometimes|string',
+            'ville' => 'sometimes|string',
+            'adresse' => 'sometimes|string',
+            'email' => 'sometimes|email|unique:clients,email,'.$client->id,
+            'password' => 'sometimes|confirmed',
+        ]);
+
+        $client->update($request->all());
+        return response()->json(['message' => 'Profil mis à jour', 'client' => $client]);
+    }
+
+    // Supprimer le compte
+    public function destroy()
+    {
+        $client = Auth::guard('clients')->user();
+        $client->delete();
+        return response()->json(['message' => 'Compte supprimé']);
     }
 
 }

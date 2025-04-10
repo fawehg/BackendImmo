@@ -14,32 +14,24 @@ class Client extends Authenticatable implements JWTSubject
     protected $fillable = [
         'nom',
         'prenom',
-        'email',
         'ville',
         'adresse',
+        'email',
         'password',
     ];
-    public function demandes()
-    {
-        return $this->hasMany(Demande::class);
-    }
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
-   
+    // Méthode pour obtenir l'identifiant JWT
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-   
+    // Méthode pour ajouter des claims personnalisés au token JWT
     public function getJWTCustomClaims()
     {
         return [];

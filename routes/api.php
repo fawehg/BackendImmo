@@ -3,64 +3,79 @@
 use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request;
-
-
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\VilleController;
+use App\Http\Controllers\DelegationController;
+use App\Http\Controllers\VendeurController;
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\DomaineController;
-use App\Http\Controllers\SpecialiteController;
-use App\Http\Controllers\DemandeController;
-use App\Http\Controllers\EspaceProController;
-use App\Http\Controllers\RechercheOuvrierController;
 
+use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\MaisonController;
+use App\Http\Controllers\EnvironnementController;
+use App\Http\Controllers\EnvironnementAppController ;
+use App\Http\Controllers\AppartementController;
+use App\Http\Controllers\VillaController;
+use App\Http\Controllers\CaracteristiqueBureauController;
+use App\Http\Controllers\BureauController;
+use App\Http\Controllers\EnvironnementFermeController;
 
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'admin'
-], function ($router) {
-Route::post('/login', [EspaceProController::class, 'login']);
-});
-Route::get('/domaines', [DomaineController::class, 'index']);
-Route::post('/domaines', [DomaineController::class, 'store']);
+use App\Http\Controllers\InfrastructureFermesController;
+use App\Http\Controllers\FermeController;
+use App\Http\Controllers\EtageVillaController;
 
-Route::get('/specialites', [SpecialiteController::class, 'index']);
-Route::post('/specialites', [SpecialiteController::class, 'store']);
+Route::post('/etage-villas', [EtageVillaController::class, 'store']);
+Route::post('/fermes', [FermeController::class,'store']);
 
+Route::get('/infrastructures', [InfrastructureFermesController::class, 'index']);
+use App\Http\Controllers\OrientationFermesController;
 
+Route::get('/orientations', [OrientationFermesController::class, 'index']);
 
+Route::get('environnement-fermes', [EnvironnementFermeController::class, 'index']);
+Route::post('/bureaux', [BureauController::class,'store']);
+Route::get('/caracteristique-bureaux',[CaracteristiqueBureauController::class,'index']);
+Route::post('/villas', [VillaController::class, 'store']);
+Route::get('/villas', [VillaController::class, 'index']);
 
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'client'
-], function ($router) {
-Route::post('/register', [ClientController::class, 'signup']);
-Route::post('/login', [ClientController::class, 'signin']);
-Route::post('/logout', [ClientController::class, 'logout']);
+Route::post('/appartements', [AppartementController::class, 'store']);
+Route::get('/environnementapp', [EnvironnementAppController::class, 'index']);
+Route::get('/environnements', [EnvironnementController::class, 'index']);
+
+Route::post('/maisons', [MaisonController::class, 'store']);
+
+Route::get('/categories', [CategorieController::class, 'index']);
+
+use App\Http\Controllers\TypeController;
+Route::get('/types', [TypeController::class, 'index']);
+
+Route::post('/vendeur/reset-password', [VendeurController::class, 'resetPassword']);
+Route::post('/vendeur/verify-reset-code', [VendeurController::class, 'verifyResetCode']);
+
 Route::post('/reset-password', [ClientController::class, 'resetPassword']);
 Route::post('/verify-reset-code', [ClientController::class, 'verifyResetCode']);
-Route::post('/demandes', [DemandeController::class, 'store']);
-Route::get('/ouvriers', [RechercheOuvrierController::class, 'rechercherOuvriers']);
-Route::post('/reserver-ouvrier', [DemandeController::class, 'selectOuvrier']);
-Route::get('/validation', [DemandeController::class, 'validation']);
 
+Route::post('/registerclient', [ClientController::class, 'register']);
+Route::post('/loginclient', [ClientController::class, 'login']);
 
-
-
+Route::middleware('auth:clients')->group(function () {
+    Route::get('/me', [ClientController::class, 'me']);
+    Route::post('/logoutclient', [ClientController::class, 'logout']);
 });
-
-Route::group([
-    'middleware' => 'api',
-    'prefix' => 'ouvrier'
-], function ($router) {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout']); 
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-    Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
-    Route::get('/profil', [AuthController::class, 'profil']);
-    Route::put('/update-profil', [AuthController::class, 'mettreAJourProfil']);
-    Route::get('/travail-demander', [DemandeController::class, 'travailDemander']);
-    Route::post('/confirm-demande', [DemandeController::class,'confirmDemande']);
+Route::post('/registervendeur', [VendeurController::class, 'register']);
+Route::post('/loginvendeur', [VendeurController::class, 'login']);
+Route::get('/delegations/{villeId}', [DelegationController::class, 'getDelegationsByVille']);
+Route::get('/villes', [VilleController::class, 'index']);
 
 
-});
+Route::get('/vendeur/profil', [VendeurController::class, 'show']);
+Route::put('/vendeur/profil', [VendeurController::class, 'update']);
+Route::delete('/vendeur/profil', [VendeurController::class, 'destroy']);
+
+
+
+
+Route::post('/contacts', [ContactController::class, 'store']);
+    // Profil client
+    Route::get('/client/profil', [ClientController::class, 'show']);
+    Route::put('/client/profil', [ClientController::class, 'update']);
+    Route::delete('/client/profil', [ClientController::class, 'destroy']);

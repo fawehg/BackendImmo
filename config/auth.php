@@ -1,49 +1,50 @@
 <?php
 
 return [
-
     'defaults' => [
-        'guard' => 'api',
-        'passwords' => 'users',
+        'guard' => 'clients', // Guard par défaut (vous pouvez choisir 'clients' ou 'vendeurs')
+        'passwords' => 'clients', // Réinitialisation de mot de passe par défaut
     ],
 
     'guards' => [
-        'api' => [
-            'driver' => 'jwt',
-            'provider' => 'users',
-        ],
-        'client_api' => [
+        'clients' => [ // Guard pour les clients
             'driver' => 'jwt',
             'provider' => 'clients',
+        ],
+
+        'vendeurs' => [ // Guard pour les vendeurs
+            'driver' => 'jwt',
+            'provider' => 'vendeurs',
         ],
     ],
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
-        ],
-        'clients' => [
+        'clients' => [ // Provider pour les clients
             'driver' => 'eloquent',
             'model' => App\Models\Client::class,
+        ],
+
+        'vendeurs' => [ // Provider pour les vendeurs
+            'driver' => 'eloquent',
+            'model' => App\Models\Vendeur::class,
         ],
     ],
 
     'passwords' => [
-        'users' => [
-            'provider' => 'users',
-            'table' => 'password_reset_tokens_users',
+        'clients' => [ // Réinitialisation de mot de passe pour les clients
+            'provider' => 'clients',
+            'table' => 'password_reset_tokens_clients',
             'expire' => 60,
             'throttle' => 60,
         ],
-        'clients' => [
-            'provider' => 'clients',
-            'table' => 'password_reset_tokens_clients',
+
+        'vendeurs' => [ // Réinitialisation de mot de passe pour les vendeurs
+            'provider' => 'vendeurs',
+            'table' => 'password_reset_tokens_vendeurs',
             'expire' => 60,
             'throttle' => 60,
         ],
     ],
 
     'password_timeout' => 10800,
-
 ];

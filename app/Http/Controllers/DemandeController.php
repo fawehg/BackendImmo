@@ -12,10 +12,11 @@ use App\Models\Client;
 use App\Models\TravailDemander;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AcceptanceNotification;
+use Illuminate\Support\Facades\Validator;
 
 class DemandeController extends Controller
 {
-    public function store(Request $request)
+    public function demandestore(Request $request)
     {
         $request->validate([
             'domaines' => 'required|string',
@@ -222,5 +223,83 @@ $travailDemander->save();
             return response()->json($travail);
         }
         
-        
+        public function index()
+        {
+            $demandes = Demande::orderBy('created_at', 'DESC')->get();
+      
+            return view('demandes.index', compact('demandes'));
+        }
+      
+    
+        public function create()
+        {
+            return view('demandes.create');
+        }
+      
+      
+        public function store(Request $request)
+        {
+            $validator = Validator::make($request->all(), [
+                'domaines' => 'required|string',
+                'specialites' => 'required|string',
+                'city' => 'required|string',
+                'date' => 'required|date',
+                'time' => 'required|date_format:H:i',
+                'description' => 'required|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+    
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+            
+            $demande = new Demande([
+                'domaines' => $request->domaines,
+                'specialites' => $request->specialites,
+                'city' => $request->city,
+                'date' => $request->date,
+                'time' => $request->time,
+                'description' => $request->description,
+            ]);
+    
+            $demande->save();
+    
+            return redirect()->route('demandes.index')->with('success', 'Demande ajoutée avec succès');
+        }
+      
+      
+        public function show(string $id)
+        {
+            $demande = Demande::findOrFail($id);
+      
+            return view('demandes.show', compact('demande'));
+        }
+      
+     
+        public function edit(string $id)
+        {
+            $demande = Demande::findOrFail($id);
+      
+            return view('demandes.edit', compact('demande'));
+        }
+      
+   
+        public function update(Request $request, string $id)
+        {
+            $demande = Demande::findOrFail($id);
+      
+            $demande->update($request->all());
+      
+            return redirect()->route('demandes')->with('success', 'Demande mise à jour avec succès');
+        }
+      
+      
+        public function destroy(string $id)
+        {
+            $demande = Demande::findOrFail($id);
+      
+            $demande->delete();
+      
+            return redirect()->route('demandes')->with('success', 'Demande supprimée avec succès');
+        }   
 }
