@@ -22,6 +22,15 @@ use App\Http\Controllers\EnvironnementFermeController;
 use App\Http\Controllers\InfrastructureFermesController;
 use App\Http\Controllers\FermeController;
 use App\Http\Controllers\EtageVillaController;
+use App\Http\Controllers\TypeTerrainController;
+use App\Http\Controllers\TypeSolController;
+use App\Http\Controllers\TerrainController;
+
+Route::post('/terrains', [TerrainController::class, 'store']);
+
+Route::get('/types-sols', [TypeSolController::class, 'index']);
+
+Route::get('/types-terrains', [TypeTerrainController::class,'index']);
 
 Route::post('/etage-villas', [EtageVillaController::class, 'store']);
 Route::post('/fermes', [FermeController::class,'store']);
