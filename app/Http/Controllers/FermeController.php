@@ -7,9 +7,80 @@ use App\Models\Ferme;
 use App\Models\FermeImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\OrientationFerme;
 
 class FermeController extends Controller
 {
+    public function index()
+{
+    $fermes = Ferme::with(['type', 'categorie', 'ville', 'delegation', 'orientation', 'environnement', 'infrastructures'])
+                   ->orderBy('created_at', 'desc')
+                   ->get();
+
+    $formatted = $fermes->map(function ($ferme) {
+        $images = collect($ferme->images)->map(function ($img) {
+            return [
+                'url' => asset('storage/' . $img),
+                'path' => $img
+            ];
+        });
+
+        return [
+            'id' => $ferme->id,
+            'titre' => $ferme->titre,
+            'description' => $ferme->description,
+            'prix' => $ferme->prix,
+            'superficie' => $ferme->superficie,
+            'adresse' => $ferme->adresse,
+            'type' => $ferme->type->nom ?? null,
+            'categorie' => $ferme->categorie->nom ?? null,
+            'ville' => $ferme->ville->nom ?? null,
+            'delegation' => $ferme->delegation->nom ?? null,
+            'orientation' => $ferme->orientation->nom ?? null,
+            'environnement' => $ferme->environnement->nom ?? null,
+            'infrastructures' => $ferme->infrastructures->pluck('nom'),
+            'images' => $images,
+            'created_at' => $ferme->created_at,
+        ];
+    });
+
+    return response()->json($formatted);
+}
+
+public function show($id)
+{
+    $ferme = Ferme::with(['type', 'categorie', 'ville', 'delegation', 'orientation', 'environnement', 'infrastructures'])->find($id);
+
+    if (!$ferme) {
+        return response()->json(['message' => 'Ferme non trouvée'], 404);
+    }
+
+    $images = collect($ferme->images)->map(function ($img) {
+        return [
+            'url' => asset('storage/' . $img),
+            'path' => $img
+        ];
+    });
+
+    return response()->json([
+        'id' => $ferme->id,
+        'titre' => $ferme->titre,
+        'description' => $ferme->description,
+        'prix' => $ferme->prix,
+        'superficie' => $ferme->superficie,
+        'adresse' => $ferme->adresse,
+        'type' => $ferme->type,
+        'categorie' => $ferme->categorie,
+        'ville' => $ferme->ville,
+        'delegation' => $ferme->delegation,
+        'orientation' => $ferme->orientation,
+        'environnement' => $ferme->environnement,
+        'infrastructures' => $ferme->infrastructures,
+        'images' => $images,
+        'created_at' => $ferme->created_at,
+    ]);
+}
+
     public function store(Request $request)
     {
         // 1. Validation des données

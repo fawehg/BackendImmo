@@ -41,7 +41,7 @@ class Ferme extends Model
 
     public function orientation()
     {
-        return $this->belongsTo(OrientationFerme::class);
+        return $this->belongsTo(OrientationFermes::class);
     }
 
     public function environnement()

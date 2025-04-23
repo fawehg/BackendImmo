@@ -16,7 +16,8 @@ return [
     */
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
-
+'paths' => ['api/*', 'storage/*'], // Ajoutez 'storage/*'
+'allowed_origins' => ['http://localhost:5173'], // ou l'URL de votre frontend
     'allowed_methods' => ['*'],
 
     'allowed_origins' => ['*'],

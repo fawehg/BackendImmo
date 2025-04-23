@@ -33,6 +33,8 @@ class Maison extends Model
         'images' => 'array',
     ];
 
+
+
     public function vendeur()
     {
         return $this->belongsTo(Vendeur::class);

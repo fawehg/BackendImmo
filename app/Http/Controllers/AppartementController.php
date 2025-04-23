@@ -9,6 +9,81 @@ use Illuminate\Support\Facades\Storage;
 
 class AppartementController extends Controller
 {
+    public function index()
+{
+    $appartements = Appartement::with(['ville', 'delegation', 'categorie', 'typeTransaction', 'environnementsApp'])
+                               ->orderBy('created_at', 'desc')
+                               ->get();
+
+    $formatted = $appartements->map(function ($appartement) {
+        $images = array_map(function ($image) {
+            return [
+                'url' => asset('storage/' . $image),
+                'path' => $image
+            ];
+        }, $appartement->images ?? []);
+
+        return [
+            'id' => $appartement->id,
+            'titre' => $appartement->titre,
+            'description' => $appartement->description,
+            'prix' => $appartement->prix,
+            'superficie' => $appartement->superficie,
+            'superficie_couvert' => $appartement->superficie_couvert,
+            'etage' => $appartement->etage,
+            'meuble' => $appartement->meuble,
+            'ville' => $appartement->ville->nom,
+            'delegation' => $appartement->delegation->nom,
+            'categorie' => $appartement->categorie->nom,
+            'type' => $appartement->typeTransaction->nom,
+            'environnements' => $appartement->environnementsApp->pluck('nom'), // ou autre champ si pas "nom"
+            'images' => $images,
+            'adresse' => $appartement->adresse,
+            'created_at' => $appartement->created_at,
+            'updated_at' => $appartement->updated_at,
+        ];
+    });
+
+    return response()->json($formatted);
+}
+public function show($id)
+{
+    $appartement = Appartement::with(['ville', 'delegation', 'categorie', 'typeTransaction', 'environnementsApp'])->find($id);
+
+    if (!$appartement) {
+        return response()->json(['message' => 'Appartement non trouvé'], 404);
+    }
+
+    $images = array_map(function ($image) {
+        return [
+            'url' => asset('storage/' . $image),
+            'path' => $image
+        ];
+    }, $appartement->images ?? []);
+
+    $formatted = [
+        'id' => $appartement->id,
+        'titre' => $appartement->titre,
+        'description' => $appartement->description,
+        'prix' => $appartement->prix,
+        'superficie' => $appartement->superficie,
+        'superficie_couvert' => $appartement->superficie_couvert,
+        'etage' => $appartement->etage,
+        'meuble' => $appartement->meuble,
+        'ville' => $appartement->ville->nom,
+        'delegation' => $appartement->delegation->nom,
+        'categorie' => $appartement->categorie->nom,
+        'type' => $appartement->typeTransaction->nom,
+        'environnements' => $appartement->environnementsApp->pluck('nom'),
+        'images' => $images,
+        'adresse' => $appartement->adresse,
+        'created_at' => $appartement->created_at,
+        'updated_at' => $appartement->updated_at,
+    ];
+
+    return response()->json($formatted);
+}
+
     public function store(Request $request)
     {
         $validated = $request->validate([

@@ -25,7 +25,20 @@ use App\Http\Controllers\EtageVillaController;
 use App\Http\Controllers\TypeTerrainController;
 use App\Http\Controllers\TypeSolController;
 use App\Http\Controllers\TerrainController;
-
+Route::get('/etage-villas', [EtageVillaController::class, 'index']);
+Route::get('/etage-villas/{id}', [EtageVillaController::class, 'show']);
+Route::get('/terrains', [TerrainController::class, 'index']);
+Route::get('/terrains/{id}', [TerrainController::class, 'show']);
+Route::get('/fermes', [FermeController::class, 'index']);
+Route::get('/fermes/{id}', [FermeController::class, 'show']);
+Route::get('/bureaux', [BureauController::class, 'index']);
+Route::get('/bureaux/{id}', [BureauController::class, 'show']);
+Route::get('/villas', [VillaController::class, 'index']);
+Route::get('/villas/{id}', [VillaController::class, 'show']);
+Route::get('/appartements', [AppartementController::class, 'index']);
+Route::get('/appartements/{id}', [AppartementController::class, 'show']);
+Route::get('/maisons', [MaisonController::class, 'index']);
+Route::get('/maisons/{id}', [MaisonController::class, 'show']);
 Route::post('/terrains', [TerrainController::class, 'store']);
 
 Route::get('/types-sols', [TypeSolController::class, 'index']);

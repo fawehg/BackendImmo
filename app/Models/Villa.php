@@ -22,7 +22,11 @@ class Villa extends Model
         'images' => 'array',
         'meuble' => 'boolean'
     ];
-
+    public function type()
+    {
+        return $this->belongsTo(Type::class);
+    }
+    
     public function environnement()
     {
         return $this->belongsTo(Environnement::class);

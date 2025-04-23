@@ -14,7 +14,6 @@ class Terrain extends Model
         'categorie_id',
         'ville_id',
         'delegation_id',
-        'environnement_id',
         'adresse',
         'titre',
         'description',
@@ -28,7 +27,10 @@ class Terrain extends Model
         'images',
     ];
 
-    // Relations (à adapter selon les tables associées)
+    protected $casts = [
+        'images' => 'array',
+    ];
+
     public function type()
     {
         return $this->belongsTo(Type::class);
@@ -49,18 +51,13 @@ class Terrain extends Model
         return $this->belongsTo(Delegation::class);
     }
 
-    public function environnement()
+    public function type_terrain()
     {
-        return $this->belongsTo(Environnement::class);
+        return $this->belongsTo(TypeTerrain::class, 'types_terrains_id');
     }
 
-    public function typesTerrain()
+    public function type_sol()
     {
-        return $this->belongsTo(TypesTerrain::class);
-    }
-
-    public function typesSol()
-    {
-        return $this->belongsTo(TypesSol::class);
+        return $this->belongsTo(TypeSol::class, 'types_sols_id');
     }
 }

@@ -8,10 +8,83 @@ use Illuminate\Support\Facades\Storage;
 
 class TerrainController extends Controller
 {
-   
-
+    public function index()
+    {
+        $terrains = Terrain::with(['type', 'categorie', 'ville', 'delegation', 'type_terrain', 'type_sol'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        $formatted = $terrains->map(function ($terrain) {
+            $images = collect($terrain->images)->map(function ($img) {
+                return [
+                    'url' => asset('storage/' . $img),
+                    'path' => $img
+                ];
+            });
+    
+            return [
+                'id' => $terrain->id,
+                'titre' => $terrain->titre,
+                'description' => $terrain->description,
+                'prix' => $terrain->prix,
+                'superficie' => $terrain->superficie,
+                'adresse' => $terrain->adresse,
+                'type' => $terrain->type->nom ?? null,
+                'categorie' => $terrain->categorie->nom ?? null,
+                'ville' => $terrain->ville->nom ?? null,
+                'delegation' => $terrain->delegation->nom ?? null,
+                'type_terrain' => $terrain->type_terrain->nom ?? null,
+                'type_sol' => $terrain->type_sol->nom ?? null,
+                'surface_constructible' => $terrain->surface_constructible,
+                'permis_construction' => $terrain->permis_construction,
+                'cloture' => $terrain->cloture,
+                'images' => $images,
+                'created_at' => $terrain->created_at,
+            ];
+        });
+    
+        return response()->json($formatted);
+    }
+    
+    public function show($id)
+    {
+        $terrain = Terrain::with(['type', 'categorie', 'ville', 'delegation', 'type_terrain', 'type_sol'])->find($id);
+    
+        if (!$terrain) {
+            return response()->json(['message' => 'Terrain non trouvé'], 404);
+        }
+    
+        $images = collect($terrain->images)->map(function ($img) {
+            return [
+                'url' => asset('storage/' . $img),
+                'path' => $img
+            ];
+        });
+    
+        return response()->json([
+            'id' => $terrain->id,
+            'titre' => $terrain->titre,
+            'description' => $terrain->description,
+            'prix' => $terrain->prix,
+            'superficie' => $terrain->superficie,
+            'adresse' => $terrain->adresse,
+            'type' => $terrain->type->nom ?? null,
+            'categorie' => $terrain->categorie->nom ?? null,
+            'ville' => $terrain->ville->nom ?? null,
+            'delegation' => $terrain->delegation->nom ?? null,
+            'type_terrain' => $terrain->type_terrain->nom ?? null,
+            'type_sol' => $terrain->type_sol->nom ?? null,
+            'surface_constructible' => $terrain->surface_constructible,
+            'permis_construction' => $terrain->permis_construction,
+            'cloture' => $terrain->cloture,
+            'images' => $images,
+            'created_at' => $terrain->created_at,
+        ]);
+    }
+    
     public function store(Request $request)
     {
+        
         // Validation des données
         $validated = $request->validate([
             'type_id' => 'required|exists:types,id',
@@ -41,8 +114,6 @@ class TerrainController extends Controller
             }
         }
     
-        // Convertir le tableau des chemins d'images en JSON
-        $imagesPathsJson = json_encode($imagesPaths);
     
         // Création du terrain avec les données validées
         $terrain = Terrain::create([
@@ -60,7 +131,7 @@ class TerrainController extends Controller
             'surface_constructible' => $validated['surface_constructible'],
             'permis_construction' => $validated['permis_construction'],
             'cloture' => $validated['cloture']?? false,
-            'images' => $imagesPathsJson // Stocker les images sous forme de chaîne JSON
+            'images' => $imagesPaths // Stocker les images sous forme de chaîne JSON
         ]);
     
         return response()->json([

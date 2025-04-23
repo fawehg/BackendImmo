@@ -15,6 +15,82 @@ use Illuminate\Support\Facades\Storage;
 
 class BureauController extends Controller
 {
+    public function index()
+{
+    $bureaux = Bureau::with(['ville', 'delegation', 'categorie', 'type', 'environnement', 'caracteristiques'])
+                     ->orderBy('created_at', 'desc')
+                     ->get();
+
+    $formattedBureaux = $bureaux->map(function ($bureau) {
+        $images = collect(json_decode($bureau->images, true))->map(function ($image) {
+            return [
+                'url' => asset('storage/' . $image),
+                'path' => $image
+            ];
+        });
+
+        return [
+            'id' => $bureau->id,
+            'titre' => $bureau->titre,
+            'description' => $bureau->description,
+            'prix' => $bureau->prix,
+            'superficie' => $bureau->superficie,
+            'superficie_couverte' => $bureau->superficie_couverte,
+            'nombre_bureaux' => $bureau->nombre_bureaux,
+            'nombre_toilettes' => $bureau->nombre_toilettes,
+            'adresse' => $bureau->adresse,
+            'ville' => $bureau->ville->nom ?? null,
+            'delegation' => $bureau->delegation->nom ?? null,
+            'categorie' => $bureau->categorie->nom ?? null,
+            'type' => $bureau->type->nom ?? null,
+            'environnement' => $bureau->environnement->nom ?? null,
+            'caracteristiques' => $bureau->caracteristiques->pluck('nom'),
+            'images' => $images,
+            'created_at' => $bureau->created_at,
+            'updated_at' => $bureau->updated_at
+        ];
+    });
+
+    return response()->json($formattedBureaux);
+}
+
+public function show($id)
+{
+    $bureau = Bureau::with(['ville', 'delegation', 'categorie', 'type', 'environnement', 'caracteristiques'])->find($id);
+
+    if (!$bureau) {
+        return response()->json(['message' => 'Bureau non trouvé'], 404);
+    }
+
+    $images = collect(json_decode($bureau->images, true))->map(function ($image) {
+        return [
+            'url' => asset('storage/' . $image),
+            'path' => $image
+        ];
+    });
+
+    return response()->json([
+        'id' => $bureau->id,
+        'titre' => $bureau->titre,
+        'description' => $bureau->description,
+        'prix' => $bureau->prix,
+        'superficie' => $bureau->superficie,
+        'superficie_couverte' => $bureau->superficie_couverte,
+        'nombre_bureaux' => $bureau->nombre_bureaux,
+        'nombre_toilettes' => $bureau->nombre_toilettes,
+        'adresse' => $bureau->adresse,
+        'ville' => $bureau->ville,
+        'delegation' => $bureau->delegation,
+        'categorie' => $bureau->categorie,
+        'type' => $bureau->type,
+        'environnement' => $bureau->environnement,
+        'caracteristiques' => $bureau->caracteristiques,
+        'images' => $images,
+        'created_at' => $bureau->created_at,
+        'updated_at' => $bureau->updated_at
+    ]);
+}
+
     public function store(Request $request)
     {
         // Validation des données

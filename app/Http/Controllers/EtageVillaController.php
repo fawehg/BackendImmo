@@ -7,9 +7,84 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class EtageVillaController extends Controller
-{
+{public function index()
+    {
+        $etageVillas = EtageVilla::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        $formatted = $etageVillas->map(function ($etage) {
+            $images = collect(json_decode($etage->images, true) ?? [])->map(function ($img) {
+                return [
+                    'url' => asset($img),
+                    'path' => $img
+                ];
+            });
+    
+            return [
+                'id' => $etage->id,
+                'titre' => $etage->titre,
+                'description' => $etage->description,
+                'prix' => $etage->prix,
+                'superficie' => $etage->superficie,
+                'adresse' => $etage->adresse,
+                'type' => $etage->type->nom ?? null,
+                'categorie' => $etage->categorie->nom ?? null,
+                'ville' => $etage->ville->nom ?? null,
+                'delegation' => $etage->delegation->nom ?? null,
+                'environnement' => $etage->environnement->nom ?? null,
+                'numero_etage' => $etage->numero_etage,
+                'acces_independant' => $etage->acces_independant,
+                'parking_inclus' => $etage->parking_inclus,
+                'annee_construction' => $etage->annee_construction,
+                'images' => $images,
+                'created_at' => $etage->created_at,
+                'ville_id' => $etage->ville_id,
+                'delegation_id' => $etage->delegation_id,
+            ];
+        });
+    
+        return response()->json($formatted);
+    }
+
+    public function show($id)
+    {
+        $etage = EtageVilla::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])->find($id);
+
+        if (!$etage) {
+            return response()->json(['message' => 'Etage Villa non trouvé'], 404);
+        }
+
+        $images = collect($etage->images)->map(function ($img) {
+            return [
+                'url' => asset($img),
+                'path' => $img
+            ];
+        });
+
+        return response()->json([
+            'id' => $etage->id,
+            'titre' => $etage->titre,
+            'description' => $etage->description,
+            'prix' => $etage->prix,
+            'superficie' => $etage->superficie,
+            'adresse' => $etage->adresse,
+            'type' => $etage->type->nom ?? null,
+            'categorie' => $etage->categorie->nom ?? null,
+            'ville' => $etage->ville->nom ?? null,
+            'delegation' => $etage->delegation->nom ?? null,
+            'environnement' => $etage->environnement->nom ?? null,
+            'numero_etage' => $etage->numero_etage,
+            'acces_independant' => $etage->acces_independant,
+            'parking_inclus' => $etage->parking_inclus,
+            'annee_construction' => $etage->annee_construction,
+            'images' => $images,
+            'created_at' => $etage->created_at,
+        ]);
+    }   
     public function store(Request $request)
     {
+        
         $validator = Validator::make($request->all(), [
             'type_id' => 'required|exists:types,id',
             'categorie_id' => 'required|exists:categories,id',
