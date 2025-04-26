@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Clients | Tableau de Bord</title>
+    <title>Gestion des Vendeurs | Tableau de Bord</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -203,6 +203,26 @@
             font-size: 0.85rem;
         }
 
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28A745;
+        }
+
+        .status-inactive {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: #6C757D;
+        }
+
         @media (max-width: 768px) {
             .header-section {
                 flex-direction: column;
@@ -245,17 +265,11 @@
 <body>
     <div class="container">
         <div class="header-section">
-            <h1 class="page-title">Gestion des Clients</h1>
-            <a href="{{ route('clients.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Ajouter un client
+            <h1 class="page-title">Gestion des Vendeurs</h1>
+            <a href="{{ route('vendeurs.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter un vendeur
             </a>
         </div>
-
-        @if(Session::has('success'))
-            <div class="alert alert-success" role="alert">
-                {{ Session::get('success') }}
-            </div>
-        @endif
 
         <div class="table-container">
             <table class="table">
@@ -264,31 +278,31 @@
                         <th>#</th>
                         <th>Nom</th>
                         <th>Prénom</th>
+                        <th>Email</th>
                         <th>Ville</th>
                         <th>Adresse</th>
-                        <th>Email</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if($clients->count() > 0)
-                        @foreach($clients as $client)
+                    @if($vendeurs->count() > 0)
+                        @foreach($vendeurs as $vendeur)
                             <tr>
                                 <td data-label="#">{{ $loop->iteration }}</td>
-                                <td data-label="Nom">{{ $client->nom }}</td>
-                                <td data-label="Prénom">{{ $client->prenom }}</td>
-                                <td data-label="Ville">{{ $client->ville }}</td>
-                                <td data-label="Adresse">{{ $client->adresse }}</td>
-                                <td data-label="Email">{{ $client->email }}</td>
+                                <td data-label="Nom">{{ $vendeur->nom }}</td>
+                                <td data-label="Prénom">{{ $vendeur->prenom }}</td>
+                                <td data-label="Email">{{ $vendeur->email }}</td>
+                                <td data-label="Ville">{{ $vendeur->ville }}</td>
+                                <td data-label="Adresse">{{ $vendeur->adresse }}</td>
                                 <td data-label="Actions">
                                     <div class="action-buttons">
-                                        <a href="{{ route('clients.show', $client->id) }}" class="btn btn-secondary btn-sm" title="Détails">
+                                        <a href="{{ route('vendeurs.show', $vendeur->id) }}" class="btn btn-secondary btn-sm" title="Détails">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('clients.edit', $client->id) }}" class="btn btn-warning btn-sm" title="Modifier">
+                                        <a href="{{ route('vendeurs.edit', $vendeur->id) }}" class="btn btn-warning btn-sm" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('clients.destroy', $client->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?')">
+                                        <form action="{{ route('vendeurs.destroy', $vendeur->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce vendeur?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
@@ -303,10 +317,10 @@
                         <tr>
                             <td colspan="7">
                                 <div class="empty-state">
-                                    <i class="fas fa-users"></i>
-                                    <p>Aucun client enregistré</p>
-                                    <a href="{{ route('clients.create') }}" class="btn btn-primary">
-                                        <i class="fas fa-plus"></i> Ajouter un client
+                                    <i class="fas fa-user-tie"></i>
+                                    <p>Aucun vendeur enregistré</p>
+                                    <a href="{{ route('vendeurs.create') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Ajouter un vendeur
                                     </a>
                                 </div>
                             </td>

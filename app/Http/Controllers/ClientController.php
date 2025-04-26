@@ -14,6 +14,77 @@ use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
+    public function indexe()
+    {
+        $clients = Client::all();
+        return view('clients.index', compact('clients'));
+    }
+
+    public function create()
+    {
+        return view('clients.create');
+    }
+
+    public function storee(Request $request)
+    {
+        $validated = $request->validate([
+            'nom' => 'required|string',
+            'prenom' => 'required|string',
+            'ville' => 'required|string',
+            'adresse' => 'required|string',
+            'email' => 'required|email|unique:clients',
+            'password' => 'required|confirmed',
+        ]);
+
+        $validated['password'] = bcrypt($validated['password']);
+        Client::create($validated);
+
+        return redirect()->route('clients')->with('success', 'Client créé avec succès.');
+    }
+
+    public function showw($id)
+    {
+        $client = Client::findOrFail($id);
+        return view('clients.show', compact('client'));
+    }
+
+    public function editt($id)
+    {
+        $client = Client::findOrFail($id);
+        return view('clients.edit', compact('client'));
+    }
+
+    public function updatee(Request $request, $id)
+    {
+        $client = Client::findOrFail($id);
+
+        $validated = $request->validate([
+            'nom' => 'required|string',
+            'prenom' => 'required|string',
+            'ville' => 'required|string',
+            'adresse' => 'required|string',
+            'email' => 'required|email|unique:clients,email,'.$id,
+            'password' => 'nullable|confirmed',
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $client->update($validated);
+
+        return redirect()->route('clients')->with('success', 'Client mis à jour avec succès.');
+    }
+
+    public function destroyy($id)
+    {
+        $client = Client::findOrFail($id);
+        $client->delete();
+
+        return redirect()->route('clients')->with('success', 'Client supprimé avec succès.');
+    }
     // Inscription d'un client
     public function register(Request $request)
     {

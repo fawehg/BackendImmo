@@ -15,6 +15,12 @@ use Illuminate\Support\Facades\Storage;
 
 class BureauController extends Controller
 {
+    public function indexe()
+{
+    $bureauxCount = Bureau::count();
+    return view('bureaux.index', compact('bureauxCount'));
+}
+
     public function index()
 {
     $bureaux = Bureau::with(['ville', 'delegation', 'categorie', 'type', 'environnement', 'caracteristiques'])

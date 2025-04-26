@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Storage;
 
 class VillaController extends Controller
 {
+    public function indexe()
+{
+    $terrainsCount = Villa::count();
+    return view('villas.index', compact('villaCount'));
+}
     public function index()
     {
         $villas = Villa::with(['ville', 'delegation', 'categorie', 'type', 'environnement'])

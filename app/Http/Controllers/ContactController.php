@@ -7,6 +7,17 @@ use App\Models\Contact;
 
 class ContactController extends Controller
 {
+    public function index()
+    {
+        $contacts = Contact::all();
+        return view('contacts.index', compact('contacts'));
+    }
+
+    public function show($id)
+    {
+        $contact = Contact::findOrFail($id);
+        return view('contacts.show', compact('contact'));
+    }
     public function store(Request $request)
     {
         $request->validate([

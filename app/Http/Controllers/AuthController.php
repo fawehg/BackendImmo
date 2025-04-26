@@ -448,26 +448,39 @@ public function ouvrierlogout(Request $request)
         return redirect()->route('ouvriers')->with('success', 'Utilisateur supprimé avec succès');
     }
     public function updateProfile(Request $request)
-{
-    $admin = Admin::findOrFail(Auth::id()); 
+    {
+        try {
+            $admin = Admin::findOrFail(Auth::id());
 
-    $validatedData = $request->validate([
-        'name' => 'required|string|max:255',
-        'phone' => 'nullable|string|max:255',
-        'address' => 'nullable|string|max:255', 
-    ]);
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'phone' => 'nullable|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
 
-    // Mise à jour des données de base de l'administrateur
-    $admin->name = $validatedData['name'];
+            // Update basic fields
+            $admin->name = $validatedData['name'];
+            $admin->phone = $validatedData['phone'];
+            $admin->address = $validatedData['address'];
 
-    // Mise à jour des données supplémentaires pour les administrateurs
-    $admin->phone = $validatedData['phone'];
-    $admin->address = $validatedData['address'];
+            // Handle avatar upload
+            if ($request->hasFile('avatar')) {
+                // Delete old avatar if it exists
+                if ($admin->avatar) {
+                    Storage::disk('public')->delete($admin->avatar);
+                }
+                // Store new avatar
+                $path = $request->file('avatar')->store('avatars', 'public');
+                $admin->avatar = $path;
+            }
 
-    $admin->save();
+            $admin->save();
 
-    return redirect()->back()->with('success', 'Profil mis à jour avec succès.');
-}
-
+            return redirect()->back()->with('success', 'Profil mis à jour avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Une erreur est survenue : ' . $e->getMessage()]);
+        }
+    }
 
 }

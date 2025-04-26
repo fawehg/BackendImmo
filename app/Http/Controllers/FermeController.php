@@ -11,6 +11,11 @@ use App\Models\OrientationFerme;
 
 class FermeController extends Controller
 {
+    public function indexe()
+    {
+        $fermes = Ferme::all(); // Récupérer toutes les fermes
+        return view('fermes.index', compact('fermes'));
+    }
     public function index()
 {
     $fermes = Ferme::with(['type', 'categorie', 'ville', 'delegation', 'orientation', 'environnement', 'infrastructures'])

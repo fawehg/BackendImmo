@@ -14,6 +14,77 @@ use Illuminate\Support\Facades\Auth;
 
 class VendeurController extends Controller
 {
+    public function indexe()
+    {
+        $vendeurs = Vendeur::all();
+        return view('vendeurs.index', compact('vendeurs'));
+    }
+
+    public function createe()
+    {
+        return view('vendeurs.create');
+    }
+
+    public function storee(Request $request)
+    {
+        $validated = $request->validate([
+            'nom' => 'required|string',
+            'prenom' => 'required|string',
+            'ville' => 'required|string',
+            'adresse' => 'required|string',
+            'email' => 'required|email|unique:vendeurs',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $validated['password'] = bcrypt($validated['password']);
+        Vendeur::create($validated);
+
+        return redirect()->route('vendeurs')->with('success', 'Vendeur créé avec succès.');
+    }
+
+    public function showw($id)
+    {
+        $vendeur = Vendeur::findOrFail($id);
+        return view('vendeurs.show', compact('vendeur'));
+    }
+
+    public function editt($id)
+    {
+        $vendeur = Vendeur::findOrFail($id);
+        return view('vendeurs.edit', compact('vendeur'));
+    }
+
+    public function updatee(Request $request, $id)
+    {
+        $vendeur = Vendeur::findOrFail($id);
+
+        $validated = $request->validate([
+            'nom' => 'required|string',
+            'prenom' => 'required|string',
+            'ville' => 'required|string',
+            'adresse' => 'required|string',
+            'email' => 'required|email|unique:vendeurs,email,'.$id,
+            'password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $vendeur->update($validated);
+
+        return redirect()->route('vendeurs')->with('success', 'Vendeur mis à jour avec succès.');
+    }
+
+    public function destroyy($id)
+    {
+        $vendeur = Vendeur::findOrFail($id);
+        $vendeur->delete();
+
+        return redirect()->route('vendeurs')->with('success', 'Vendeur supprimé avec succès.');
+    }
     public function register(Request $request)
     {
         $request->validate([

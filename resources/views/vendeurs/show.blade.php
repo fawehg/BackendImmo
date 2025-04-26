@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Client | Tableau de Bord</title>
+    <title>Profil Vendeur | Tableau de Bord</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -227,15 +227,16 @@
         .detail-item:nth-child(4) { animation-delay: 0.4s; }
         .detail-item:nth-child(5) { animation-delay: 0.5s; }
         .detail-item:nth-child(6) { animation-delay: 0.6s; }
+        .detail-item:nth-child(7) { animation-delay: 0.7s; }
     </style>
 </head>
 <body>
     <div class="profile-container">
         <div class="profile-header">
             <div class="profile-avatar">
-                {{ strtoupper(substr($client->prenom, 0, 1)) }}{{ strtoupper(substr($client->nom, 0, 1)) }}
+                {{ strtoupper(substr($vendeur->prenom, 0, 1)) }}{{ strtoupper(substr($vendeur->nom, 0, 1)) }}
             </div>
-            <h1>{{ $client->prenom }} {{ $client->nom }}</h1>
+            <h1>{{ $vendeur->prenom }} {{ $vendeur->nom }}</h1>
         </div>
 
         <div class="detail-grid">
@@ -245,7 +246,7 @@
                     <span>Nom</span>
                 </div>
                 <div class="detail-value">
-                    {{ $client->nom }}
+                    {{ $vendeur->nom }}
                 </div>
             </div>
 
@@ -255,7 +256,7 @@
                     <span>Prénom</span>
                 </div>
                 <div class="detail-value">
-                    {{ $client->prenom }}
+                    {{ $vendeur->prenom }}
                 </div>
             </div>
 
@@ -265,7 +266,7 @@
                     <span>Email</span>
                 </div>
                 <div class="detail-value">
-                    {{ $client->email }}
+                    {{ $vendeur->email }}
                 </div>
             </div>
 
@@ -275,7 +276,7 @@
                     <span>Ville</span>
                 </div>
                 <div class="detail-value">
-                    {{ $client->ville }}
+                    {{ $vendeur->ville }}
                 </div>
             </div>
 
@@ -285,27 +286,37 @@
                     <span>Adresse</span>
                 </div>
                 <div class="detail-value">
-                    {{ $client->adresse }}
+                    {{ $vendeur->adresse }}
                 </div>
             </div>
 
             <div class="detail-item">
                 <div class="detail-label">
-                    <i class="fas fa-lock"></i>
-                    <span>Mot de passe</span>
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Date de création</span>
                 </div>
                 <div class="detail-value">
-                    ********
+                    {{ $vendeur->created_at->format('d/m/Y H:i') }}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Dernière mise à jour</span>
+                </div>
+                <div class="detail-value">
+                    {{ $vendeur->updated_at->format('d/m/Y H:i') }}
                 </div>
             </div>
         </div>
 
         <div class="action-buttons">
-            <a href="{{ route('clients.edit', $client->id) }}" class="btn btn-secondary">
+            <a href="{{ route('vendeurs.edit', $vendeur->id) }}" class="btn btn-secondary">
                 <i class="fas fa-edit"></i> Modifier
             </a>
           
-            <form action="{{ route('clients.destroy', $client->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client?')">
+            <form action="{{ route('vendeurs.destroy', $vendeur->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce vendeur?')">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">

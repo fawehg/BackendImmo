@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Storage;
 
 class AppartementController extends Controller
 {
+    public function indexe()
+    {
+        // Logique pour récupérer les appartements, par exemple :
+        $appartementsCount = Appartement::count(); // Vous pouvez ajuster en fonction de votre modèle et logique
+        return view('appartements.index', compact('appartementsCount'));
+    }
     public function index()
 {
     $appartements = Appartement::with(['ville', 'delegation', 'categorie', 'typeTransaction', 'environnementsApp'])

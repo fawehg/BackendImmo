@@ -6,42 +6,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouveau Client | Tableau de Bord</title>
+    <title>Nouveau Vendeur | Tableau de Bord</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #3A4F7A;
-            --secondary-color: #4C6B9B;
-            --accent-color: #6B8FD4;
-            --text-color: #2D3748;
-            --light-text: #718096;
-            --bg-color: #F8FAFC;
-            --card-color: #FFFFFF;
-            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.08);
-            --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.12);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --radius-lg: 16px;
-            --radius-md: 8px;
+            --couleur-primaire: #3A4F7A;
+            --couleur-secondaire: #4C6B9B;
+            --couleur-accent: #6B8FD4;
+            --couleur-texte: #2D3748;
+            --couleur-texte-secondaire: #718096;
+            --couleur-fond: #F8FAFC;
+            --couleur-carte: #FFFFFF;
+            --ombre-legere: 0 2px 12px rgba(0, 0, 0, 0.08);
+            --ombre-portee: 0 10px 30px rgba(0, 0, 0, 0.12);
+            --transition-fluide: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 16px;
+            --border-radius-input: 8px;
         }
 
         body {
             font-family: 'Montserrat', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--couleur-fond);
+            color: var(--couleur-texte);
             margin: 0;
             padding: 0;
             line-height: 1.6;
         }
 
         .form-container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 3rem auto;
             padding: 3rem;
-            background-color: var(--card-color);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
+            background-color: var(--couleur-carte);
+            border-radius: var(--border-radius);
+            box-shadow: var(--ombre-legere);
             position: relative;
+            overflow: hidden;
         }
 
         .form-container::before {
@@ -50,52 +51,52 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 6px;
-            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-            border-top-left-radius: var(--radius-lg);
-            border-top-right-radius: var(--radius-lg);
+            height: 8px;
+            background: linear-gradient(90deg, var(--couleur-primaire), var(--couleur-accent));
         }
 
         .form-header {
             text-align: center;
-            margin-bottom: 2.5rem;
-            position: relative;
+            margin-bottom: 3rem;
         }
 
         .form-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 2.2rem;
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--couleur-primaire);
             margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
         }
 
-        .form-header::after {
+        .form-header h1::after {
             content: '';
             position: absolute;
-            bottom: -1.5rem;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80px;
+            width: 60px;
             height: 3px;
-            background: var(--accent-color);
+            background: var(--couleur-accent);
             border-radius: 3px;
+        }
+
+        .form-header p {
+            color: var(--couleur-texte-secondaire);
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+            gap: 2rem;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
             position: relative;
         }
 
@@ -103,24 +104,19 @@
             grid-column: span 2;
         }
 
-        @media (max-width: 768px) {
-            .form-group.full-width {
-                grid-column: span 1;
-            }
-        }
-
         .form-label {
-            display: flex;
-            align-items: center;
+            display: block;
             margin-bottom: 0.75rem;
             font-weight: 500;
-            color: var(--primary-color);
+            color: var(--couleur-primaire);
             font-size: 0.95rem;
+            display: flex;
+            align-items: center;
         }
 
         .form-label i {
             margin-right: 10px;
-            color: var(--accent-color);
+            color: var(--couleur-accent);
             width: 20px;
             text-align: center;
         }
@@ -129,15 +125,15 @@
             width: 100%;
             padding: 0.85rem 1.25rem 0.85rem 3rem;
             border: 1px solid #E2E8F0;
-            border-radius: var(--radius-md);
+            border-radius: var(--border-radius-input);
             font-size: 0.95rem;
-            transition: var(--transition);
+            transition: var(--transition-fluide);
             background-color: #F8FAFC;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: var(--accent-color);
+            border-color: var(--couleur-accent);
             box-shadow: 0 0 0 3px rgba(107, 143, 212, 0.15);
             background-color: white;
         }
@@ -146,7 +142,7 @@
             position: absolute;
             left: 1rem;
             top: 2.85rem;
-            color: var(--light-text);
+            color: var(--couleur-texte-secondaire);
             font-size: 1rem;
         }
 
@@ -156,14 +152,14 @@
             justify-content: center;
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire));
             color: white;
             border: none;
-            border-radius: var(--radius-md);
+            border-radius: var(--border-radius-input);
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-fluide);
             margin-top: 1rem;
             box-shadow: 0 4px 12px rgba(58, 79, 122, 0.2);
         }
@@ -171,7 +167,7 @@
         .btn-submit:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(58, 79, 122, 0.25);
-            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            background: linear-gradient(135deg, var(--couleur-secondaire), var(--couleur-primaire));
         }
 
         .btn-submit i {
@@ -181,7 +177,7 @@
         .password-strength {
             margin-top: 0.5rem;
             font-size: 0.85rem;
-            color: var(--light-text);
+            color: var(--couleur-texte-secondaire);
         }
 
         .strength-bar {
@@ -199,6 +195,7 @@
             transition: width 0.3s ease;
         }
 
+        /* Style pour les erreurs de validation */
         .error-message {
             color: #E53E3E;
             font-size: 0.85rem;
@@ -207,6 +204,25 @@
 
         .input-error {
             border-color: #FC8181;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 1.5rem;
+                padding: 2rem 1.5rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+            
+            .form-header h1 {
+                font-size: 1.8rem;
+            }
         }
 
         /* Animation */
@@ -227,23 +243,24 @@
         .form-group:nth-child(5) { animation-delay: 0.5s; }
         .form-group:nth-child(6) { animation-delay: 0.6s; }
         .form-group:nth-child(7) { animation-delay: 0.7s; }
+        .form-group:nth-child(8) { animation-delay: 0.8s; }
     </style>
 </head>
 <body>
     <div class="form-container">
         <div class="form-header">
-            <h1>Nouveau Client</h1>
-            <p>Remplissez les informations pour créer un nouveau client</p>
+            <h1>Nouveau Vendeur</h1>
+            <p>Remplissez les informations pour créer un nouveau compte vendeur</p>
         </div>
 
-        <form action="{{ route('clients.store') }}" method="POST" id="clientForm">
+        <form method="POST" action="{{ route('vendeurs.store') }}" id="vendeurForm">
             @csrf
             
             <div class="form-grid">
                 <div class="form-group">
                     <label for="nom"><i class="fas fa-user"></i>Nom</label>
                     <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="nom" name="nom" value="{{ old('nom') }}" class="form-input @error('nom') input-error @enderror" required>
+                    <input type="text" id="nom" name="nom" value="{{ old('nom') }}" class="form-input @error('nom') input-error @enderror" required autofocus>
                     @error('nom')
                         <div class="error-message">{{ $message }}</div>
                     @enderror
@@ -259,8 +276,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="ville"><i class="fas fa-city"></i>Ville</label>
-                    <i class="fas fa-city input-icon"></i>
+                    <label for="ville"><i class="fas fa-map-marker-alt"></i>Ville</label>
+                    <i class="fas fa-map-marker-alt input-icon"></i>
                     <input type="text" id="ville" name="ville" value="{{ old('ville') }}" class="form-input @error('ville') input-error @enderror" required>
                     @error('ville')
                         <div class="error-message">{{ $message }}</div>
@@ -268,8 +285,8 @@
                 </div>
 
                 <div class="form-group full-width">
-                    <label for="adresse"><i class="fas fa-map-marker-alt"></i>Adresse</label>
-                    <i class="fas fa-map-marker-alt input-icon"></i>
+                    <label for="adresse"><i class="fas fa-home"></i>Adresse</label>
+                    <i class="fas fa-home input-icon"></i>
                     <input type="text" id="adresse" name="adresse" value="{{ old('adresse') }}" class="form-input @error('adresse') input-error @enderror" required>
                     @error('adresse')
                         <div class="error-message">{{ $message }}</div>
@@ -277,7 +294,7 @@
                 </div>
 
                 <div class="form-group full-width">
-                    <label for="email"><i class="fas fa-envelope"></i>Email</label>
+                    <label for="email"><i class="fas fa-envelope"></i>Adresse Email</label>
                     <i class="fas fa-envelope input-icon"></i>
                     <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-input @error('email') input-error @enderror" required>
                     @error('email')
@@ -301,14 +318,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password_confirmation"><i class="fas fa-lock"></i>Confirmation</label>
+                    <label for="password-confirm"><i class="fas fa-lock"></i>Confirmation</label>
                     <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-input" required>
+                    <input type="password" id="password-confirm" name="password_confirmation" class="form-input" required>
                 </div>
             </div>
 
             <button type="submit" class="btn-submit">
-                <i class="fas fa-user-plus"></i> Créer le client
+                <i class="fas fa-user-plus"></i> Créer le vendeur
             </button>
         </form>
     </div>

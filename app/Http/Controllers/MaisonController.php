@@ -1,52 +1,88 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Maison;
-use App\Models\MaisonImage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Ville;
+use Illuminate\Support\Facades\Log;
 
 class MaisonController extends Controller
 {
     public function index()
     {
-        $maisons = Maison::with(['ville', 'delegation', 'categorie', 'type'])
-                         ->orderBy('created_at', 'desc')
-                         ->get();
+        try {
+            // 1. Récupération des maisons avec relations
+            $maisons = Maison::with([
+                'ville',
+                'delegation',
+                'categorie',
+                'typeTransaction',
+                'environnement'
+            ])->orderBy('created_at', 'desc')->get();
     
-        $formattedMaisons = $maisons->map(function ($maison) {
-            // Convertir les chemins relatifs en URLs absolues
-            $images = array_map(function ($image) {
+            // Log pour vérifier les données brutes
+            Log::debug('Maisons récupérées', [
+                'count' => $maisons->count(),
+                'first_item' => $maisons->first() ? $maisons->first()->toArray() : null
+            ]);
+    
+            // 2. Formatage des données
+            $formatted = $maisons->map(function ($maison) {
+                $images = array_map(function ($image) {
+                    return [
+                        'url' => asset('storage/' . $image),
+                        'path' => $image
+                    ];
+                }, $maison->images ?? []);
+        
+    
+                // 4. Construction de la réponse
                 return [
-                    'url' => asset('storage/'.$image),
-                    'path' => $image
+                    'id' => $maison->id,
+                    'titre' => $maison->titre,
+                    'description' => $maison->description,
+                    'prix' => $maison->prix,
+                    'superficie' => $maison->superficie,
+                    'nombre_chambres' => $maison->nombre_chambres,
+                    'nombre_pieces' => $maison->nombre_pieces,
+                    'annee_construction' => $maison->annee_construction,
+                    'adresse' => $maison->adresse,
+                    'meuble' => $maison->meuble,
+                    'ville' => $maison->ville->nom ?? null,
+                    'delegation' => $maison->delegation->nom ?? null,
+                    'categorie' => $maison->categorie->nom ?? null,
+                    'type_transaction' => $maison->typeTransaction->nom ?? null,
+                    'environnement' => $maison->environnement->nom ?? null,
+                    'images' => $images,
+                    'created_at' => $maison->created_at,
+                    'updated_at' => $maison->updated_at
                 ];
-            }, $maison->images ?? []);
+            });
     
-            return [
-                'id' => $maison->id,
-                'titre' => $maison->titre,
-                'description' => $maison->description,
-                'prix' => $maison->prix,
-                'superficie' => $maison->superficie,
-                'chambres' => $maison->chambres,
-                'salles_de_bain' => $maison->salles_de_bain,
-                'salles_eau' => $maison->salles_eau,
-                'ville' => $maison->ville->nom,
-                'delegation' => $maison->delegation->nom,
-                'categorie' => $maison->categorie->nom,
-                'type' => $maison->type->nom,
-                'images' => $images, // Maintenant un tableau d'objets avec url et path
-                'adresse' => $maison->adresse,
-                'created_at' => $maison->created_at,
-                'updated_at' => $maison->updated_at
-            ];
-        });
+            // Log final avant retour
+            Log::info('Réponse des maisons générée', [
+                'count' => $formatted->count(),
+                'sample' => $formatted->first()
+            ]);
     
-        return response()->json($formattedMaisons);
+            // 5. Retour de la réponse
+            return response()->json($formatted);
+    
+        } catch (\Exception $e) {
+            Log::error('Erreur dans MaisonController@index', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des maisons',
+                'details' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
+
+    
     public function store(Request $request)
     {
         // 1. Validation des données
@@ -59,83 +95,51 @@ class MaisonController extends Controller
             'titre' => 'required|string|max:255',
             'description' => 'required|string',
             'prix' => 'required|numeric|min:0',
-            'superficie' => 'required|integer|min:1',
+            'superficie' => 'required|numeric|min:1',
             'nombre_chambres' => 'required|integer|min:0',
             'nombre_pieces' => 'required|integer|min:0',
-'annee_construction' => 'required|integer|min:0',
-            'environnement_id' => 'required|exists:environnements,id', // Validation clé étrangère
+            'annee_construction' => 'required|integer|min:1900|max:'.(date('Y') + 1),
+            'environnement_id' => 'required|exists:environnements,id',
             'meuble' => 'sometimes|boolean',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
         ]);
-    
-        // 2. Traitement des images
+
+        // 2. Log des données reçues
+        Log::info('Requête reçue pour store maison', [
+            'files' => $request->hasFile('images'),
+            'images_count' => count($request->file('images') ?? []),
+            'validated' => $validated,
+        ]);
+
+        // 3. Traitement des images
         $imagesPaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $path = $image->store('maisons_images', 'public');
-                $imagesPaths[] = $path;
+                if ($image->isValid()) {
+                    $path = $image->store('maisons_images', 'public');
+                    $imagesPaths[] = $path;
+                    Log::info('Image stockée', ['path' => $path]);
+                } else {
+                    Log::warning('Image invalide détectée', ['image' => $image]);
+                }
             }
+        } else {
+            Log::info('Aucune image envoyée dans la requête');
         }
-    
-        // 3. Création de l'annonce
-        $maison = Maison::create([
-            'type_transaction_id' => $validated['type_transaction_id'],
-            'categorie_id' => $validated['categorie_id'],
-            'ville_id' => $validated['ville_id'],
-            'delegation_id' => $validated['delegation_id'],
-            'adresse' => $validated['adresse'],
-            'titre' => $validated['titre'],
-            'description' => $validated['description'],
-            'prix' => $validated['prix'],
-            'superficie' => $validated['superficie'],
-            'nombre_chambres' => $validated['nombre_chambres'],
-            'nombre_pieces' => $validated['nombre_pieces'],
-            'annee_construction' => $validated['annee_construction'],
 
-            'environnement_id' => $validated['environnement_id'], // Champ crucial
-            'meuble' => $validated['meuble'] ?? false,
-            'images' => $imagesPaths,
-        ]);
-    
-        // 4. Retour de la réponse
+        // 4. Création de la maison
+        $maison = Maison::create(array_merge($validated, [
+            'images' => $imagesPaths ?: []
+        ]));
+
+        // 5. Log de la maison créée
+        Log::info('Maison créée', ['maison_id' => $maison->id, 'images' => $maison->images]);
+
+        // 6. Retour de la réponse
         return response()->json([
             'message' => 'Maison créée avec succès',
-            'data' => $maison,
-            'environnement_id' => $maison->environnement_id // Vérification
+            'data' => $maison->load(['ville', 'delegation', 'categorie', 'typeTransaction', 'environnement'])
         ], 201);
     }
-    public function show($id)
-{
-    $maison = Maison::with([
-        'ville',
-        'delegation',
-        'categorie',
-        'type', // C’est celui qu’on vient d’ajouter
-    ])->find($id);
-    
-    if (!$maison) {
-        return response()->json(['message' => 'Maison non trouvée'], 404);
-    }
-
-    return response()->json([
-        'id' => $maison->id,
-        'titre' => $maison->titre,
-        'description' => $maison->description,
-        'prix' => $maison->prix,
-        'superficie' => $maison->superficie,
-        'nombre_chambres' => $maison->nombre_chambres,
-        'nombre_pieces' => $maison->nombre_pieces,
-        'annee_construction' => $maison->annee_construction,
-        'adresse' => $maison->adresse,
-        'meuble' => $maison->meuble,
-        'images' => $maison->images,
-    
-        'ville' => $maison->ville,
-        'delegation' => $maison->delegation,
-        'categorie' => $maison->categorie,
-        'type' => $maison->type,
-        'environnement' => $maison->environnement,
-    ]);
-    
-}}
+}

@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Type extends Model
 {
-    use HasFactory;
+    protected $fillable = ['nom'];
+
+    public function maisons()
+    {
+        return $this->hasMany(Maison::class, 'type_transaction_id');
+    }
 }

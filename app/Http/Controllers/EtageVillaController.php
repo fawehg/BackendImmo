@@ -7,7 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class EtageVillaController extends Controller
-{public function index()
+{public function indexe()
+    {
+        $etagesVillasCount = EtageVilla::count();
+        return view('etagesVillas.index', compact('etagesVillasCount'));
+    }
+    
+    public function index()
     {
         $etageVillas = EtageVilla::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])
             ->orderBy('created_at', 'desc')

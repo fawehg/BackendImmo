@@ -23,8 +23,7 @@ class Maison extends Model
         'nombre_pieces',
         'annee_construction',
         'meuble',
-        'environnement_id', // Doit être présent
-
+        'environnement_id',
         'images',
     ];
 
@@ -33,14 +32,7 @@ class Maison extends Model
         'images' => 'array',
     ];
 
-
-
-    public function vendeur()
-    {
-        return $this->belongsTo(Vendeur::class);
-    }
-
-    public function type()
+    public function typeTransaction()
     {
         return $this->belongsTo(Type::class, 'type_transaction_id');
     }
@@ -60,13 +52,8 @@ class Maison extends Model
         return $this->belongsTo(Delegation::class);
     }
 
-    public function images()
+    public function environnement()
     {
-        return $this->hasMany(MaisonImage::class);
-    }
-
-    public function environnements()
-    {
-        return $this->belongsToMany(Environnement::class);
+        return $this->belongsTo(Environnement::class);
     }
 }

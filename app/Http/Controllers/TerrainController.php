@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Storage;
 
 class TerrainController extends Controller
 {
+    public function indexe()
+{
+    $terrainsCount = Terrain::count();
+    return view('terrains.index', compact('terrainsCount'));
+}
+
     public function index()
     {
         $terrains = Terrain::with(['type', 'categorie', 'ville', 'delegation', 'type_terrain', 'type_sol'])

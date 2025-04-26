@@ -101,3 +101,4 @@ Route::post('/contacts', [ContactController::class, 'store']);
     Route::get('/client/profil', [ClientController::class, 'show']);
     Route::put('/client/profil', [ClientController::class, 'update']);
     Route::delete('/client/profil', [ClientController::class, 'destroy']);
+
