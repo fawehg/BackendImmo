@@ -2,15 +2,185 @@
 
 
 namespace App\Http\Controllers;
-
 use App\Models\Ferme;
+use App\Models\Type;
+use App\Models\Categorie;
+use App\Models\Ville;
+use App\Models\Delegation;
+use App\Models\Orientation;
+use App\Models\Environnement;
+use App\Models\FermeInfrastructure;
 use App\Models\FermeImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Models\OrientationFerme;
+use App\Models\OrientationFermes;
+use App\Models\InfrastructureFermes;
 
 class FermeController extends Controller
-{
+{ public function indexferme()
+    {
+        $fermes = Ferme::with(['type', 'categorie', 'ville', 'delegation', 'orientationFermes', 'environnement', 'infrastructures'])->get();
+        return view('fermes.index', compact('fermes'));
+    }public function getDelegationsByVille(Request $request)
+    {
+        $villeId = $request->input('ville_id');
+        $delegations = Delegation::where('ville_id', $villeId)->get();
+        return response()->json($delegations);
+    }
+
+    public function createferme()
+    {
+        $types = Type::all();
+        $categories = Categorie::all();
+        $villes = Ville::all();
+        $delegations = Delegation::all();
+        $orientations = OrientationFermes::all();
+        $environnements = Environnement::all();
+        $infrastructures = InfrastructureFermes::all();
+                return view('fermes.create', compact('types', 'categories', 'villes', 'delegations', 'orientations', 'environnements', 'infrastructures'));
+    }
+
+    public function storeferme(Request $request)
+    {
+        $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'prix' => 'required|numeric|min:0',
+            'superficie' => 'required|integer|min:1',
+            'adresse' => 'required|string|max:255',
+            'type_id' => 'required|exists:types,id',
+            'categorie_id' => 'required|exists:categories,id',
+            'ville_id' => 'required|exists:ville,id',
+            'delegation_id' => 'required|exists:delegations,id',
+            'orientation_id' => 'required|exists:orientation_fermes,id',
+            'environnement_id' => 'required|exists:environnement_fermes,id',
+            'infrastructures' => 'nullable|array',
+            'infrastructures.*' => 'exists:infrastructure_fermes,id', // Assurez-vous que c'est le bon nom de table
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        $imagesPaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('fermes_images', 'public');
+                $imagesPaths[] = $path;
+            }
+        }
+
+        $ferme = Ferme::create([
+            'titre' => $validated['titre'],
+            'description' => $validated['description'],
+            'prix' => $validated['prix'],
+            'superficie' => $validated['superficie'],
+            'adresse' => $validated['adresse'],
+            'type_id' => $validated['type_id'],
+            'categorie_id' => $validated['categorie_id'],
+            'ville_id' => $validated['ville_id'],
+            'delegation_id' => $validated['delegation_id'],
+            'orientation_id' => $validated['orientation_id'],
+            'environnement_id' => $validated['environnement_id'],
+            'images' => $imagesPaths,
+        ]);
+
+        if ($request->has('infrastructures')) {
+            $ferme->infrastructures()->attach($validated['infrastructures']);
+        }
+        return redirect()->route('fermes.index')->with('success', 'Ferme créée avec succès.');
+    }
+
+    public function showferme($id)
+    {
+        $ferme = Ferme::with(['type', 'categorie', 'ville', 'delegation', 'orientation', 'environnement', 'infrastructures'])->findOrFail($id);
+        return view('fermes.show', compact('ferme'));
+    }
+
+    public function editferme($id)
+    {
+        $ferme = Ferme::with(['infrastructures'])->findOrFail($id);
+        $types = Type::all();
+        $categories = Categorie::all();
+        $villes = Ville::all();
+        $delegations = Delegation::all();
+        $orientations = OrientationFermes::all();
+        $environnements = Environnement::all();
+        $infrastructures = InfrastructureFermes::all();
+                return view('fermes.edit', compact('ferme', 'types', 'categories', 'villes', 'delegations', 'orientations', 'environnements', 'infrastructures'));
+    }
+
+    public function updateferme(Request $request, $id)
+    {
+        $ferme = Ferme::findOrFail($id);
+
+        $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'prix' => 'required|numeric|min:0',
+            'superficie' => 'required|integer|min:1',
+            'adresse' => 'required|string|max:255',
+            'type_id' => 'required|exists:types,id',
+            'categorie_id' => 'required|exists:categories,id',
+            'ville_id' => 'required|exists:ville,id',
+            'delegation_id' => 'required|exists:delegations,id',
+            'orientation_id' => 'required|exists:orientation_fermes,id',
+            'environnement_id' => 'required|exists:environnements,id',
+            'infrastructures' => 'nullable|array',
+            'infrastructures.*' => 'exists:infrastructures,id',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        $imagesPaths = $ferme->images ?? [];
+        if ($request->hasFile('images')) {
+            foreach ($imagesPaths as $oldImage) {
+                Storage::disk('public')->delete($oldImage);
+            }
+            $imagesPaths = [];
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('fermes_images', 'public');
+                $imagesPaths[] = $path;
+            }
+        }
+
+        $ferme->update([
+            'titre' => $validated['titre'],
+            'description' => $validated['description'],
+            'prix' => $validated['prix'],
+            'superficie' => $validated['superficie'],
+            'adresse' => $validated['adresse'],
+            'type_id' => $validated['type_id'],
+            'categorie_id' => $validated['categorie_id'],
+            'ville_id' => $validated['ville_id'],
+            'delegation_id' => $validated['delegation_id'],
+            'orientation_id' => $validated['orientation_id'],
+            'environnement_id' => $validated['environnement_id'],
+            'images' => $imagesPaths,
+        ]);
+
+        if ($request->has('infrastructures')) {
+            $ferme->infrastructures()->sync($request->infrastructures);
+        } else {
+            $ferme->infrastructures()->detach();
+        }
+
+        return redirect()->route('fermes')->with('success', 'Ferme mise à jour avec succès.');
+    }
+
+    public function destroyferme($id)
+    {
+        $ferme = Ferme::findOrFail($id);
+
+        if ($ferme->images) {
+            foreach ($ferme->images as $image) {
+                Storage::disk('public')->delete($image);
+            }
+        }
+
+        $ferme->infrastructures()->detach();
+        $ferme->delete();
+
+        return redirect()->route('fermes')->with('success', 'Ferme supprimée avec succès.');
+    }
     public function indexe()
     {
         $fermes = Ferme::all(); // Récupérer toutes les fermes
