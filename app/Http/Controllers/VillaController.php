@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\Villa;
 use App\Models\Environnement;
@@ -9,6 +10,265 @@ use Illuminate\Support\Facades\Storage;
 
 class VillaController extends Controller
 {
+    public function indexvillas()
+    {
+        try {
+            $villas = Villa::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            Log::info('Villas loaded for index view', ['count' => $villas->count()]);
+
+            return view('villas.index', compact('villas'));
+        } catch (Exception $e) {
+            Log::error('Error in VillaController@indexetagesvillas', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'Une erreur est survenue lors du chargement des villas.');
+        }
+    }
+
+    /**
+     * Show the form for creating a new villa.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function createvilla()
+    {
+        try {
+            $types = Type::all();
+            $categories = Categorie::all();
+            $villes = Ville::all();
+            $environnements = Environnement::all();
+
+            return view('villas.create', compact('types', 'categories', 'villes', 'environnements'));
+        } catch (Exception $e) {
+            Log::error('Error in VillaController@createvilla', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('villas.index')->with('error', 'Une erreur est survenue lors du chargement du formulaire.');
+        }
+    }
+
+    /**
+     * Store a newly created villa in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function storevilla(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'titre' => 'required|string|max:255',
+                'description' => 'required|string',
+                'prix' => 'required|numeric|min:0',
+                'superficie' => 'required|numeric|min:1',
+                'superficie_jardin' => 'nullable|numeric|min:0',
+                'chambres' => 'required|integer|min:0',
+                'pieces' => 'required|integer|min:0',
+                'etages' => 'required|integer|min:0',
+                'annee_construction' => 'nullable|integer|min:1900|max:' . date('Y'),
+                'meuble' => 'nullable|boolean',
+                'jardin' => 'nullable|boolean',
+                'piscine' => 'nullable|boolean',
+                'piscine_privee' => 'nullable|boolean',
+                'garage' => 'nullable|boolean',
+                'cave' => 'nullable|boolean',
+                'terrasse' => 'nullable|boolean',
+                'adresse' => 'required|string|max:255',
+                'type_id' => 'required|exists:types,id',
+                'categorie_id' => 'required|exists:categories,id',
+                'ville_id' => 'required|exists:villes,id',
+                'delegation_id' => 'required|exists:delegations,id',
+                'environnement_id' => 'nullable|exists:environnements,id',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+
+            $imagePaths = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('villas_images', 'public');
+                    $imagePaths[] = $path;
+                }
+            }
+            $validated['images'] = $imagePaths;
+
+            // Convert checkbox values to boolean
+            $checkboxes = ['meuble', 'jardin', 'piscine', 'piscine_privee', 'garage', 'cave', 'terrasse'];
+            foreach ($checkboxes as $checkbox) {
+                $validated[$checkbox] = $request->has($checkbox) ? true : false;
+            }
+
+            Villa::create($validated);
+
+            Log::info('Villa created successfully', ['titre' => $validated['titre']]);
+
+            return redirect()->route('villas.index')->with('success', 'Villa ajoutée avec succès.');
+        } catch (Exception $e) {
+            Log::error('Error in VillaController@storevilla', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'ajout de la villa.')->withInput();
+        }
+    }
+
+    /**
+     * Display the specified villa.
+     *
+     * @param  int  $id
+     * @return \Illuminate\View\View
+     */
+    public function showvilla($id)
+    {
+        try {
+            $villa = Villa::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])->findOrFail($id);
+
+            Log::info('Villa loaded for show view', ['id' => $id]);
+
+            return view('villas.show', compact('villa'));
+        } catch (Exception $e) {
+            Log::error('Error in VillaController@showvilla', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('villas.index')->with('error', 'Une erreur est survenue lors du chargement de la villa.');
+        }
+    }
+
+    /**
+     * Show the form for editing the specified villa.
+     *
+     * @param  int  $id
+     * @return \Illuminate\View\View
+     */
+    public function editvilla($id)
+    {
+        try {
+            $villa = Villa::findOrFail($id);
+            $types = Type::all();
+            $categories = Categorie::all();
+            $villes = Ville::all();
+            $environnements = Environnement::all();
+
+            Log::info('Villa loaded for edit view', ['id' => $id]);
+
+            return view('villas.edit', compact('villa', 'types', 'categories', 'villes', 'environnements'));
+        } catch (Exception $e) {
+            Log::error('Error in VillaController@editvilla', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('villas.index')->with('error', 'Une erreur est survenue lors du chargement du formulaire de modification.');
+        }
+    }
+
+    /**
+     * Update the specified villa in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updatevilla(Request $request, $id)
+    {
+        try {
+            $villa = Villa::findOrFail($id);
+
+            $validated = $request->validate([
+                'titre' => 'required|string|max:255',
+                'description' => 'required|string',
+                'prix' => 'required|numeric|min:0',
+                'superficie' => 'required|numeric|min:1',
+                'superficie_jardin' => 'nullable|numeric|min:0',
+                'chambres' => 'required|integer|min:0',
+                'pieces' => 'required|integer|min:0',
+                'etages' => 'required|integer|min:0',
+                'annee_construction' => 'nullable|integer|min:1900|max:' . date('Y'),
+                'meuble' => 'nullable|boolean',
+                'jardin' => 'nullable|boolean',
+                'piscine' => 'nullable|boolean',
+                'piscine_privee' => 'nullable|boolean',
+                'garage' => 'nullable|boolean',
+                'cave' => 'nullable|boolean',
+                'terrasse' => 'nullable|boolean',
+                'adresse' => 'required|string|max:255',
+                'type_id' => 'required|exists:types,id',
+                'categorie_id' => 'required|exists:categories,id',
+                'ville_id' => 'required|exists:villes,id',
+                'delegation_id' => 'required|exists:delegations,id',
+                'environnement_id' => 'nullable|exists:environnements,id',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+
+            $imagePaths = is_array($villa->images) ? $villa->images : [];
+            if ($request->hasFile('images')) {
+                // Optionally delete old images
+                foreach ($imagePaths as $path) {
+                    Storage::disk('public')->delete($path);
+                }
+                $imagePaths = [];
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('villas_images', 'public');
+                    $imagePaths[] = $path;
+                }
+            }
+            $validated['images'] = $imagePaths;
+
+            // Convert checkbox values to boolean
+            $checkboxes = ['meuble', 'jardin', 'piscine', 'piscine_privee', 'garage', 'cave', 'terrasse'];
+            foreach ($checkboxes as $checkbox) {
+                $validated[$checkbox] = $request->has($checkbox) ? true : false;
+            }
+
+            $villa->update($validated);
+
+            Log::info('Villa updated successfully', ['id' => $id, 'titre' => $validated['titre']]);
+
+            return redirect()->route('villas.index')->with('success', 'Villa mise à jour avec succès.');
+        } catch (Exception $e) {
+            Log::error('Error in VillaController@updatevilla', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de la mise à jour de la villa.')->withInput();
+        }
+    }
+
+    /**
+     * Remove the specified villa from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroyetagesvillas($id)
+    {
+        try {
+            $villa = Villa::findOrFail($id);
+
+            // Delete associated images
+            if (is_array($villa->images)) {
+                foreach ($villa->images as $path) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+
+            $villa->delete();
+
+            Log::info('Villa deleted successfully', ['id' => $id]);
+
+            return redirect()->route('villas.index')->with('success', 'Villa supprimée avec succès.');
+        } catch (Exception $e) {
+            Log::error('Error in VillaController@destroyetagesvillas', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('villas')->with('error', 'Une erreur est survenue lors de la suppression de la villa.');
+        }
+    }
     public function indexe()
 {
     $terrainsCount = Villa::count();

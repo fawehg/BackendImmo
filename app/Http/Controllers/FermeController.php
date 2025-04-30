@@ -50,42 +50,48 @@ class FermeController extends Controller
             'adresse' => 'required|string|max:255',
             'type_id' => 'required|exists:types,id',
             'categorie_id' => 'required|exists:categories,id',
-            'ville_id' => 'required|exists:ville,id',
-            'delegation_id' => 'required|exists:delegations,id',
+            'ville_id' => 'required|exists:villes,id',
+            'delegation_id' => [
+                'required',
+                'exists:delegations,id',
+                function ($attribute, $value, $fail) use ($request) {
+                    $delegation = Delegation::find($value);
+                    if ($delegation && $delegation->ville_id != $request->ville_id) {
+                        $fail('La délégation sélectionnée n\'appartient pas à la ville choisie.');
+                    }
+                },
+            ],
             'orientation_id' => 'required|exists:orientation_fermes,id',
             'environnement_id' => 'required|exists:environnement_fermes,id',
             'infrastructures' => 'nullable|array',
-            'infrastructures.*' => 'exists:infrastructure_fermes,id', // Assurez-vous que c'est le bon nom de table
+            'infrastructures.*' => 'exists:infrastructure_fermes,id',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
-        $imagesPaths = [];
+    
+        // Prepare data
+        $data = $validated;
+    
+        // Handle image uploads
         if ($request->hasFile('images')) {
+            $imagePaths = [];
             foreach ($request->file('images') as $image) {
                 $path = $image->store('fermes_images', 'public');
-                $imagesPaths[] = $path;
+                $imagePaths[] = $path;
             }
+            $data['images'] = json_encode($imagePaths);
+        } else {
+            $data['images'] = json_encode([]);
         }
-
-        $ferme = Ferme::create([
-            'titre' => $validated['titre'],
-            'description' => $validated['description'],
-            'prix' => $validated['prix'],
-            'superficie' => $validated['superficie'],
-            'adresse' => $validated['adresse'],
-            'type_id' => $validated['type_id'],
-            'categorie_id' => $validated['categorie_id'],
-            'ville_id' => $validated['ville_id'],
-            'delegation_id' => $validated['delegation_id'],
-            'orientation_id' => $validated['orientation_id'],
-            'environnement_id' => $validated['environnement_id'],
-            'images' => $imagesPaths,
-        ]);
-
+    
+        // Create the ferme
+        $ferme = Ferme::create($data);
+    
+        // Attach infrastructures if provided
         if ($request->has('infrastructures')) {
             $ferme->infrastructures()->attach($validated['infrastructures']);
         }
+    
         return redirect()->route('fermes.index')->with('success', 'Ferme créée avec succès.');
     }
 

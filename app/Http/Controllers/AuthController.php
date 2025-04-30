@@ -17,97 +17,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
     {
-       public function ouvrierregister(Request $request)
-        {
-            $response = [
-                "ResultInfo" => [
-                    'Success' => true,
-                    'ErrorMessage' => "",
-                ],
-                "ResultData" => []
-            ];
-        
-            $validator = Validator::make($request->all(), [
-                'nom' => 'required|string',
-                'prenom' => 'required|string',
-                'email' => 'required|email|unique:users',
-                'ville' => 'required|string',
-                'adresse' => 'required|string',
-                'password' => 'required|string',
-                'confirmationMotDePasse' => 'required|string|same:password',
-                'profession' => 'required|string',
-              
-                'heureDebut' => 'required|string',
-                'heureFin' => 'required|string',
-                'numeroTelephone' => 'required|string', 
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|', 
-            ]);
-        
-            if ($validator->fails()) {
-                $response["ResultInfo"]["Success"] = false;
-                $response["ResultInfo"]["ErrorMessage"] = $validator->errors();
-        
-                return response()->json($response, 400);
-            }
-        
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('images', 'public');
-            } else {
-                $imagePath = null;
-            }
-        
-            $user = User::create([
-                'nom' => $request->nom,
-                'prenom' => $request->prenom,
-                'email' => $request->email,
-                'ville' => $request->ville,
-                'adresse' => $request->adresse,
-                'password' => bcrypt($request->password),
-                'profession' => $request->profession,
-                'specialties' => $request->specialties,
-                'joursDisponibilite' => $request->joursDisponibilite,
-                'heureDebut' => $request->heureDebut,
-                'heureFin' => $request->heureFin,
-                'numeroTelephone' => $request->numeroTelephone, 
-                'image' => $imagePath, 
-            ]);
-            
-            if (!$token = JWTAuth::fromUser($user)) {
-                $response["ResultInfo"]["Success"] = false;
-                $response["ResultInfo"]["ErrorMessage"] = 'Erreur lors de la génération du token.';
-                return response()->json($response, 401);
-            }
-        
-            $response["ResultData"]['token'] = $token;
-            $response["ResultData"]['user'] = $user;
-        
-            return response()->json($response, 201);
-        }
-        
-        public function ouvrierlogin(Request $request)
-        {
-            $credentials = $request->only('email', 'password');
-            $response = [
-                "ResultInfo" => [
-                    'Success' => true,
-                    'ErrorMessage' => "",
-                ],
-                "ResultData" => []
-            ];
-        
-            // Utilisation du modèle App\Models\User pour récupérer l'utilisateur
-            if (!$token = JWTAuth::attempt($credentials, ['model' => \App\Models\User::class])) {
-                $response["ResultInfo"]["Success"] = false;
-                $response["ResultInfo"]["ErrorMessage"] = 'Adresse e-mail ou mot de passe incorrect.';
-                return response()->json($response, 401);
-            }
-        
-            $response["ResultInfo"]["Success"] = true;
-            $response["ResultData"]['token'] = $token;
-            $response["ResultData"]['user'] = auth()->user();
-        
-            return response()->json($response, 200);
-        }
+       
         
     public function showw($id)
     {
@@ -195,32 +105,7 @@ class AuthController extends Controller
         ]
     ]);
 }
-public function ouvrierlogout(Request $request)
-{
-    try {
-        JWTAuth::invalidate(JWTAuth::getToken());
 
-        $response = [
-            "ResultInfo" => [
-                'Success' => true,
-                'ErrorMessage' => "",
-            ],
-            "ResultData" => [
-                'message' => 'Déconnexion réussie.'
-            ]
-        ];
-
-        return response()->json($response, 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            "ResultInfo" => [
-                'Success' => false,
-                'ErrorMessage' => "Une erreur s'est produite lors de la déconnexion.",
-            ],
-            "ResultData" => []
-        ], 500);
-    }
-}
     public function profil(Request $request)
     {
         try {
@@ -356,97 +241,17 @@ public function ouvrierlogout(Request $request)
     }
 
     
-    public function index()
-    {
-        $users = User::orderBy('created_at', 'DESC')->get();
-    
-        return view('ouvriers.index', compact('users'));
-    }
-    
+   
     
     
     
   
-    public function create()
-    {
-        return view('ouvriers.create');
-    }
+    
   
    
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nom' => 'required|string',
-            'prenom' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'ville' => 'required|string',
-            'adresse' => 'required|string',
-            'password' => 'required|string',
-            'confirmationMotDePasse' => 'required|string|same:password',
-            'profession' => 'required|string',
-            'heureDebut' => 'required|string',
-            'heureFin' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
-        ]);
+   
     
-        $user = new User();
-        $user->nom = $request->input('nom');
-        $user->prenom = $request->input('prenom');
-        $user->email = $request->input('email');
-        $user->ville = $request->input('ville');
-        $user->adresse = $request->input('adresse');
-        $user->password = bcrypt($request->input('password'));
-        $user->profession = $request->input('profession');
-        $user->specialties = $request->input('specialties');
-        $user->joursDisponibilite = $request->input('joursDisponibilite');
-        $user->heureDebut = $request->input('heureDebut');
-        $user->heureFin = $request->input('heureFin');
     
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('images', 'public');
-            $user->image = $imagePath;
-        }
-    
-        $user->save();
-    
-        return redirect()->route('ouvriers.index')->with('success', 'Utilisateur enregistré avec succès.');
-    }
-    
-  
-    public function show(string $id)
-    {
-        $user = User::findOrFail($id);
-  
-        return view('ouvriers.show', compact('user'));
-    }
-  
-    
-    public function edit(string $id)
-    {
-        $user = User::findOrFail($id);
-  
-        return view('ouvriers.edit', compact('user'));
-    }
-  
-  
-    public function update(Request $request, string $id)
-    {
-        $user = User::findOrFail($id);
-  
-        $user->update($request->all());
-  
-        return redirect()->route('ouvriers')->with('success', 'Utilisateur mis à jour avec succès');
-    }
-  
- 
-    public function destroy(string $id)
-    {
-        $user = User::findOrFail($id);
-  
-        $user->delete();
-  
-        return redirect()->route('ouvriers')->with('success', 'Utilisateur supprimé avec succès');
-    }
     public function updateProfile(Request $request)
     {
         try {

@@ -1,24 +1,28 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Tableau de Bord - B2C')</title>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #00ddeb;
-            --secondary: #ff00e1;
-            --dark: #0a0e1a;
-            --light: #e0e7ff;
-            --accent: #3b82f6;
-            --glow: 0 0 8px rgba(0, 221, 235, 0.5), 0 0 16px rgba(0, 221, 235, 0.3);
-            --shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-            --transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            --sidebar-width: 260px;
+            --primary: #2B6CB0; /* Deep blue for primary elements */
+            --secondary: #9F7AEA; /* Soft purple for accents */
+            --background: #F7FAFC; /* Light gray background */
+            --card-bg: rgba(255, 255, 255, 0.95); /* Semi-transparent white for cards */
+            --text-dark: #1A202C; /* Dark gray for text */
+            --text-light: #4A5568; /* Lighter gray for secondary text */
+            --border: #E2E8F0; /* Light border color */
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            --glow: 0 0 10px rgba(43, 108, 176, 0.2); /* Soft glow effect */
+            --transition: all 0.3s ease-in-out;
+            --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
+            --border-radius: 12px;
         }
 
         * {
@@ -28,20 +32,13 @@
         }
 
         body {
-            font-family: 'Manrope', sans-serif;
-            background: linear-gradient(-45deg, #0a0e1a, #1e2a44, #2a3b6b, #0a0e1a);
-            background-size: 400%;
-            animation: gradientShift 15s ease infinite;
-            color: var(--light);
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text-dark);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            overflow-x: hidden;
         }
 
         /* App Wrapper */
@@ -54,10 +51,8 @@
         /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
-            background: linear-gradient(180deg, rgba(10, 14, 26, 0.9), rgba(30, 41, 59, 0.9));
-            backdrop-filter: blur(12px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--light);
+            background: linear-gradient(180deg, var(--primary) 0%, #4C78A8 100%);
+            color: #FFFFFF;
             position: fixed;
             top: 0;
             left: 0;
@@ -65,6 +60,7 @@
             transition: var(--transition);
             overflow-y: auto;
             z-index: 1000;
+            box-shadow: var(--shadow);
         }
 
         .sidebar.collapsed {
@@ -72,12 +68,12 @@
         }
 
         .sidebar-brand {
-            padding: 1.5rem 1rem;
+            padding: 2rem 1.5rem;
             text-align: center;
         }
 
         .sidebar-logo {
-            width: 180px;
+            width: 200px;
             height: auto;
             transition: var(--transition);
         }
@@ -89,7 +85,7 @@
         .sidebar-divider {
             border: 0;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
-            margin: 1rem 0;
+            margin: 1.5rem 0;
         }
 
         .sidebar-nav {
@@ -113,31 +109,29 @@
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: var(--light);
+            padding: 1rem 1.5rem;
+            color: #FFFFFF;
             text-decoration: none;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 500;
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             margin: 0 1rem;
             transition: var(--transition);
         }
 
         .nav-link:hover {
-            background: rgba(0, 221, 235, 0.2);
-            color: var(--primary);
-            box-shadow: var(--glow);
+            background: rgba(255, 255, 255, 0.1);
             transform: translateX(4px);
+            box-shadow: var(--glow);
         }
 
         .nav-item.active .nav-link {
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            color: #fff;
+            background: var(--secondary);
             box-shadow: var(--glow);
         }
 
         .nav-link i {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             margin-right: 1rem;
             transition: var(--transition);
         }
@@ -158,11 +152,11 @@
             left: 100%;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(10, 14, 26, 0.9);
-            color: var(--light);
+            background: var(--card-bg);
+            color: var(--text-dark);
             padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
+            border-radius: var(--border-radius);
+            font-size: 0.85rem;
             white-space: nowrap;
             opacity: 0;
             visibility: hidden;
@@ -179,13 +173,13 @@
 
         .sidebar-toggle {
             text-align: center;
-            padding: 1rem;
+            padding: 1.5rem;
         }
 
         #sidebarToggle {
             background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
+            border: 2px solid #FFFFFF;
+            color: #FFFFFF;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -197,21 +191,16 @@
         }
 
         #sidebarToggle:hover {
-            background: var(--primary);
-            color: var(--dark);
+            background: #FFFFFF;
+            color: var(--primary);
             box-shadow: var(--glow);
-            transform: rotate(180deg);
-        }
-
-        .sidebar.collapsed #sidebarToggle i {
-            transform: rotate(180deg);
         }
 
         /* Top Navigation Bar */
         .top-navbar {
-            background: rgba(10, 14, 26, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -222,6 +211,7 @@
             right: 0;
             z-index: 900;
             transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         .sidebar.collapsed ~ .main-content .top-navbar {
@@ -231,26 +221,28 @@
         .search-bar {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2rem;
+            background: #EDF2F7;
+            border-radius: var(--border-radius);
             padding: 0.5rem 1rem;
             transition: var(--transition);
         }
 
         .search-bar:focus-within {
             box-shadow: var(--glow);
+            border-color: var(--primary);
         }
 
         .search-input {
             background: transparent;
             border: none;
-            color: var(--light);
+            color: var(--text-dark);
             padding: 0.5rem;
             width: 250px;
+            font-size: 0.9rem;
         }
 
         .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-light);
         }
 
         .search-button {
@@ -258,6 +250,7 @@
             border: none;
             color: var(--primary);
             cursor: pointer;
+            font-size: 1.1rem;
         }
 
         .nav-icons {
@@ -268,8 +261,13 @@
 
         .notification-badge {
             position: relative;
-            color: var(--light);
+            color: var(--text-dark);
             cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .notification-badge:hover {
+            color: var(--primary);
         }
 
         .badge-counter {
@@ -277,7 +275,7 @@
             top: -5px;
             right: -5px;
             background: var(--secondary);
-            color: white;
+            color: #FFFFFF;
             border-radius: 50%;
             width: 20px;
             height: 20px;
@@ -293,6 +291,11 @@
             align-items: center;
             gap: 0.75rem;
             cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .user-profile:hover {
+            color: var(--primary);
         }
 
         .profile-image {
@@ -305,6 +308,7 @@
 
         .profile-name {
             font-weight: 600;
+            font-size: 0.9rem;
         }
 
         /* Dropdown Menu */
@@ -312,9 +316,9 @@
             position: absolute;
             right: 0;
             top: 100%;
-            background: rgba(10, 14, 26, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
             padding: 0.5rem 0;
             min-width: 200px;
             box-shadow: var(--shadow);
@@ -331,7 +335,7 @@
 
         .dropdown-item {
             padding: 0.75rem 1.5rem;
-            color: var(--light);
+            color: var(--text-dark);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -340,12 +344,12 @@
         }
 
         .dropdown-item:hover {
-            background: rgba(0, 221, 235, 0.2);
-            color: var(--primary);
+            background: var(--primary);
+            color: #FFFFFF;
         }
 
         .dropdown-divider {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid var(--border);
             margin: 0.5rem 0;
         }
 
@@ -353,8 +357,9 @@
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
-            padding: 6rem 2.5rem 12rem; /* Increased padding-bottom for fixed footer */
+            padding: 5rem 2rem 2rem;
             transition: var(--transition);
+            min-height: calc(100vh - 5rem);
         }
 
         .sidebar.collapsed ~ .main-content {
@@ -363,145 +368,123 @@
 
         /* Dashboard Styles */
         .dashboard-container {
-            max-width: 1500px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .dashboard-header {
-            text-align: center;
-            margin-bottom: 3rem;
+            text-align: left;
+            margin-bottom: 2rem;
         }
 
         .dashboard-header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 600;
             color: var(--primary);
-            text-shadow: 0 0 10px rgba(0, 221, 235, 0.5);
             margin-bottom: 0.5rem;
         }
 
         .dashboard-header p {
             font-size: 1rem;
-            color: #a5b4fc;
-            font-weight: 400;
+            color: var(--text-light);
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
             box-shadow: var(--shadow);
             transition: var(--transition);
             position: relative;
             text-decoration: none;
-            color: var(--light);
-            overflow: hidden;
+            color: var(--text-dark);
+            backdrop-filter: blur(10px);
         }
 
         .stat-card:hover {
-            transform: translateY(-8px) scale(1.03);
+            transform: translateY(-5px);
             box-shadow: var(--shadow), var(--glow);
             border-color: var(--primary);
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 221, 235, 0.2) 0%, transparent 70%);
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .stat-card:hover::before {
-            opacity: 1;
-        }
-
         .stat-card i {
-            font-size: 2rem;
+            font-size: 1.5rem;
             color: var(--primary);
-            background: rgba(0, 221, 235, 0.1);
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: 1rem;
+            background: rgba(43, 108, 176, 0.1);
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--border-radius);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--glow);
+            margin-bottom: 1rem;
             transition: var(--transition);
         }
 
         .stat-card:hover i {
-            transform: scale(1.15);
-            box-shadow: 0 0 15px rgba(0, 221, 235, 0.7);
+            background: var(--primary);
+            color: #FFFFFF;
         }
 
         .stat-card h3 {
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: #a5b4fc;
+            color: var(--text-light);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .stat-card .value {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
-            color: var(--light);
-            margin-bottom: 1rem;
-            text-shadow: 0 0 5px rgba(0, 221, 235, 0.3);
+            color: var(--text-dark);
         }
 
         .stat-card .view-link {
             display: inline-flex;
             align-items: center;
             color: var(--primary);
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             font-weight: 500;
             text-decoration: none;
+            margin-top: 1rem;
             transition: var(--transition);
         }
 
         .stat-card .view-link:hover {
             color: var(--secondary);
-            transform: translateX(6px);
-            text-shadow: 0 0 5px rgba(255, 0, 225, 0.5);
+            transform: translateX(4px);
         }
 
         .stat-card .view-link i {
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             margin-left: 0.5rem;
             background: transparent;
         }
 
         .charts-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .chart-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
             box-shadow: var(--shadow);
             transition: var(--transition);
+            backdrop-filter: blur(10px);
         }
 
         .chart-card:hover {
@@ -510,56 +493,31 @@
         }
 
         .chart-header {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .chart-header h2 {
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--primary);
-            text-shadow: 0 0 5px rgba(0, 221, 235, 0.3);
         }
 
         .chart-wrapper {
             position: relative;
-            height: 400px;
+            height: 300px;
             width: 100%;
         }
-
-        /* Animations */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .stat-card, .chart-card {
-            animation: fadeInScale 0.8s ease-out forwards;
-        }
-
-        .stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .stat-card:nth-child(3) { animation-delay: 0.3s; }
-        .stat-card:nth-child(4) { animation-delay: 0.4s; }
-        .stat-card:nth-child(5) { animation-delay: 0.5s; }
-        .stat-card:nth-child(6) { animation-delay: 0.6s; }
-        .chart-card:nth-child(1) { animation-delay: 0.7s; }
-        .chart-card:nth-child(2) { animation-delay: 0.8s; }
 
         /* Notification Dropdown */
         .notification-dropdown {
             position: absolute;
             right: 0;
             top: 100%;
-            background: rgba(10, 14, 26, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
             padding: 0.5rem 0;
-            width: 350px;
+            width: 320px;
             max-height: 400px;
             overflow-y: auto;
             box-shadow: var(--shadow);
@@ -576,7 +534,7 @@
 
         .notification-header {
             padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -591,7 +549,8 @@
         }
 
         .notification-item:hover {
-            background: rgba(0, 221, 235, 0.1);
+            background: var(--primary);
+            color: #FFFFFF;
         }
 
         .notification-icon {
@@ -605,13 +564,13 @@
         }
 
         .icon-circle.bg-primary {
-            background: rgba(0, 221, 235, 0.2);
+            background: rgba(43, 108, 176, 0.2);
             color: var(--primary);
         }
 
         .icon-circle.bg-success {
-            background: rgba(0, 255, 163, 0.2);
-            color: #00ffa3;
+            background: rgba(72, 187, 120, 0.2);
+            color: #48BB78;
         }
 
         .notification-content {
@@ -620,15 +579,41 @@
 
         .notification-time {
             font-size: 0.75rem;
-            color: #a5b4fc;
+            color: var(--text-light);
         }
+
+        .notification-item:hover .notification-time {
+            color: #FFFFFF;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .stat-card, .chart-card {
+            animation: fadeInScale 0.6s ease-out forwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .chart-card:nth-child(1) { animation-delay: 0.5s; }
+        .chart-card:nth-child(2) { animation-delay: 0.6s; }
 
         /* Responsive Design */
         @media (max-width: 1200px) {
             .charts-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .notification-dropdown {
                 width: 300px;
             }
@@ -637,6 +622,10 @@
         @media (max-width: 992px) {
             .search-input {
                 width: 200px;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.75rem;
             }
         }
 
@@ -665,7 +654,7 @@
 
             .main-content {
                 margin-left: var(--sidebar-collapsed-width);
-                padding: 5rem 1.5rem 10rem; /* Adjusted padding-bottom for mobile */
+                padding: 4.5rem 1.5rem 1.5rem;
             }
 
             .top-navbar {
@@ -675,10 +664,6 @@
 
             .stats-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .dashboard-header h1 {
-                font-size: 1.75rem;
             }
 
             .stat-card .value {
@@ -716,14 +701,18 @@
 
             .notification-dropdown {
                 width: 280px;
-                right: -50%;
+                right: -10px;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.5rem;
             }
         }
 
         /* Focus States */
-        .nav-link:focus, 
-        #sidebarToggle:focus, 
-        .stat-card:focus, 
+        .nav-link:focus,
+        #sidebarToggle:focus,
+        .stat-card:focus,
         .view-link:focus,
         .search-input:focus,
         .search-button:focus,
@@ -747,8 +736,6 @@
         <main class="main-content">
             @yield('contents')
         </main>
-
-        <!-- Footer -->
     </div>
 
     <script>
@@ -756,10 +743,6 @@
         document.getElementById('sidebarToggle').addEventListener('click', () => {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('collapsed');
-            
-            // Rotate icon
-            const icon = document.querySelector('#sidebarToggle i');
-            icon.style.transform = sidebar.classList.contains('collapsed') ? 'rotate(180deg)' : 'rotate(0)';
         });
 
         // User Dropdown
@@ -769,8 +752,6 @@
         userDropdown.addEventListener('click', (e) => {
             e.stopPropagation();
             dropdownMenu.classList.toggle('show');
-            
-            // Close notification dropdown if open
             notificationDropdown.classList.remove('show');
         });
 
@@ -781,8 +762,6 @@
         notificationToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             notificationDropdown.classList.toggle('show');
-            
-            // Close user dropdown if open
             dropdownMenu.classList.remove('show');
         });
 
@@ -795,11 +774,8 @@
         // Prevent dropdown close when clicking inside
         dropdownMenu.addEventListener('click', (e) => e.stopPropagation());
         notificationDropdown.addEventListener('click', (e) => e.stopPropagation());
-
-        // Initialize Charts if they exist on page
-      
     </script>
-    
+
     @yield('scripts')
 </body>
 </html>

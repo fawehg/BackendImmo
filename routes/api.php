@@ -72,6 +72,9 @@ Route::get('/types', [TypeController::class, 'index']);
 
 Route::post('/vendeur/reset-password', [VendeurController::class, 'resetPassword']);
 Route::post('/vendeur/verify-reset-code', [VendeurController::class, 'verifyResetCode']);
+use App\Http\Controllers\PropertyController;
+
+Route::get('/all-properties', [PropertyController::class, 'index']);
 
 Route::post('/reset-password', [ClientController::class, 'resetPassword']);
 Route::post('/verify-reset-code', [ClientController::class, 'verifyResetCode']);

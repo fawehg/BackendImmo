@@ -26,7 +26,10 @@ class Maison extends Model
         'environnement_id',
         'images',
     ];
-
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
     protected $casts = [
         'meuble' => 'boolean',
         'images' => 'array',

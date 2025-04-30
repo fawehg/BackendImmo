@@ -53,7 +53,42 @@ Route::controller(FermeController::class)->prefix('fermes')->group(function () {
     Route::put('editferme/{id}', 'updateferme')->name('fermes.update');
     Route::delete('destroyferme/{id}', 'destroyferme')->name('fermes.destroy');
 });
-    
+Route::controller(MaisonController::class)->prefix('maisons')->group(function () {
+    Route::get('', 'indexmaison')->name('maisons.index');
+    Route::get('createmaison', 'createmaison')->name('maisons.create');
+    Route::post('storemaison', 'storemaison')->name('maisons.store');
+    Route::get('showmaison/{id}', 'showmaison')->name('maisons.show');
+    Route::get('editmaison/{id}', 'editmaison')->name('maisons.edit');
+    Route::put('editmaison/{id}', 'updatemaison')->name('maisons.update');
+    Route::delete('destroymaison/{id}', 'destroymaison')->name('maisons.destroy');
+});
+Route::controller(BureauController::class)->prefix('bureaux')->group(function () {
+    Route::get('', 'indexbureau')->name('bureaux.index');
+    Route::get('createbureau', 'createbureau')->name('bureaux.create');
+    Route::post('storebureau', 'storebureau')->name('bureaux.store');
+    Route::get('showbureau/{id}', 'showbureau')->name('bureaux.show');
+    Route::get('editbureau/{id}', 'editbureau')->name('bureaux.edit');
+    Route::put('editbureau/{id}', 'updatebureau')->name('bureaux.update');
+    Route::delete('destroybureau/{id}', 'destroybureau')->name('bureaux.destroy');
+});
+Route::controller(EtageVillaController::class)->prefix('etagesvillas')->group(function () {
+    Route::get('', 'indexetagesvillas')->name('etagesvillas.index');
+    Route::get('createetagesvillas', 'createetagesvillas')->name('etagesvillas.create');
+    Route::post('storeetagesvillas', 'storeetagesvillas')->name('etagesvillas.store');
+    Route::get('showetagesvillas/{id}', 'showetagesvillas')->name('etagesvillas.show');
+    Route::get('editetagesvillas/{id}', 'editetagesvillas')->name('etagesvillas.edit');
+    Route::put('editetagesvillas/{id}', 'updateetagesvillas')->name('etagesvillas.update');
+    Route::delete('destroyetagesvillas/{id}', 'destroyetagesvillas')->name('etagesvillas.destroy');
+});
+Route::controller(TerrainController::class)->prefix('terrains')->group(function () {
+    Route::get('', 'indexterrain')->name('terrains.index');
+    Route::get('createterrain', 'createterrain')->name('terrains.create');
+    Route::post('storeterrain', 'storeterrain')->name('terrains.store');
+    Route::get('showterrain/{id}', 'showterrain')->name('terrains.show');
+    Route::get('editterrain/{id}', 'editterrain')->name('terrains.edit');
+    Route::put('editterrain/{id}', 'updateterrain')->name('terrains.update');
+    Route::delete('destroyterrain/{id}', 'destroyterrain')->name('terrains.destroy');
+});
     Route::controller(VendeurController::class)->prefix('vendeurs')->group(function () {
             Route::get('', 'indexe')->name('vendeurs');
             Route::get('createe', 'createe')->name('vendeurs.create');
@@ -73,7 +108,15 @@ Route::controller(FermeController::class)->prefix('fermes')->group(function () {
         Route::put('editt/{id}', 'updatee')->name('clients.update');
         Route::delete('destroyy/{id}', 'destroyy')->name('clients.destroy');
     });
-
+    Route::controller(VillaController::class)->prefix('villas')->group(function () {
+        Route::get('', 'indexvillas')->name('etagesvillas.index');
+        Route::get('createvilla', 'createvilla')->name('villas.create');
+        Route::post('storevilla', 'storevilla')->name('villas.store');
+        Route::get('showvilla/{id}', 'showvilla')->name('villas.show');
+        Route::get('editvilla/{id}', 'editvilla')->name('villas.edit');
+        Route::put('editvilla/{id}', 'updatevilla')->name('villas.update');
+        Route::delete('destroyvilla/{id}', 'destroyetagesvillas')->name('villas.destroy');
+    });
 
 Route::controller(ContactController::class)->prefix('contacts')->group(function () {
     Route::get('', 'index')->name('contacts');
@@ -83,11 +126,11 @@ Route::controller(ContactController::class)->prefix('contacts')->group(function 
 });
 Route::post('/delegations/by-ville', [FermeController::class, 'getDelegationsByVille'])->name('delegations.by.ville');
 // Route pour la page des maisons
-Route::get('/maisons', [MaisonController::class, 'indexe'])->name('maisons');
-Route::get('/bureaux', [BureauController::class, 'indexe'])->name('bureaux');
-Route::get('/etages-villas', [EtageVillaController::class, 'indexe'])->name('etagesVillas');
-Route::get('/terrains', [TerrainController::class, 'indexe'])->name('terrains');
-Route::get('/villas', [VillaController::class, 'indexe'])->name('villas');
+Route::get('/maisons', [MaisonController::class, 'indexmaison'])->name('maisons');
+Route::get('/bureaux', [BureauController::class, 'indexbureau'])->name('bureaux');
+Route::get('/etagesvillas', [EtageVillaController::class, 'indexetagesvillas'])->name('etagesVillas');
+Route::get('/terrains', [TerrainController::class, 'indexterrain'])->name('terrains');
+Route::get('/villas', [VillaController::class, 'indexvillas'])->name('villas');
 Route::get('/fermes', [FermeController::class, 'indexe'])->name('fermes');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
