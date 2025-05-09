@@ -11,54 +11,194 @@ use App\Models\Categorie;
 use App\Models\Ville;
 use App\Models\Environnement;
 use App\Models\Delegation;
+use Illuminate\Support\Facades\Auth;
 
 
 class MaisonController extends Controller
 {
-    public function show($id)
+    public function listAnnonceMaison()
     {
-        $maison = Maison::with([
-            'ville',
-            'delegation',
-            'categorie',
-            'typeTransaction',
-            'environnement'
-        ])->find($id);
-    
-        if (!$maison) {
-            return response()->json(['message' => 'Maison non trouvée'], 404);
-        }
-    
-        $images = array_map(function ($image) {
-            return [
-                'url' => asset('storage/' . $image),
-                'path' => $image
-            ];
-        }, $maison->images ?? []);
-    
-        return response()->json([
-            'id' => $maison->id,
-            'type_transaction_id' => $maison->type_transaction_id,
-            'categorie_id' => $maison->categorie_id,
-            'ville_id' => $maison->ville_id,
-            'delegation_id' => $maison->delegation_id,
-            'adresse' => $maison->adresse,
-            'titre' => $maison->titre,
-            'description' => $maison->description,
-            'prix' => $maison->prix,
-            'superficie' => $maison->superficie,
-            'nombre_chambres' => $maison->nombre_chambres,
-            'nombre_pieces' => $maison->nombre_pieces,
-            'annee_construction' => $maison->annee_construction,
-            'meuble' => $maison->meuble,
-            'images' => $images,
-            'ville' => $maison->ville,
-            'delegation' => $maison->delegation,
-            'categorie' => $maison->categorie,
-            'type_transaction' => $maison->typeTransaction,
-            'environnement' => $maison->environnement,
-        ]);
+        // Récupère les maisons de l'utilisateur connecté
+        $maisons = Maison::where('vendeur_id', Auth::id())
+            ->with(['ville', 'delegation', 'categorie', 'typeTransaction', 'environnement'])
+            ->latest()
+            ->get();
+
+        return response()->json($maisons);
     }
+
+    public function showAnnonceMaison($id)
+    {
+        // Affiche les détails de la maison spécifique
+        $maison = Maison::where('vendeur_id', Auth::id())
+            ->with(['ville', 'delegation', 'categorie', 'typeTransaction', 'environnement'])
+            ->findOrFail($id);
+
+        return response()->json($maison);
+    }
+public function updateAnnonceMaison(Request $request, $id)
+{
+    $maison = Maison::where('id', $id)
+        ->where('vendeur_id', Auth::id())
+        ->firstOrFail();
+
+    $validated = $request->validate([
+        'titre' => 'required|string|max:255',
+        'description' => 'required|string',
+        'prix' => 'required|numeric|min:0',
+        'superficie' => 'required|numeric|min:1',
+        'nombre_chambres' => 'nullable|integer|min:0',
+        'nombre_pieces' => 'nullable|integer|min:0',
+        'annee_construction' => 'nullable|integer|min:1900|max:' . date('Y'),
+        'meuble' => 'boolean',
+        'ville_id' => 'required|exists:villes,id',
+        'delegation_id' => 'required|exists:delegations,id',
+        'categorie_id' => 'required|exists:categories,id',
+        'type_transaction_id' => 'required|exists:types,id',
+        'environnement_id' => 'nullable|exists:environnements,id',
+    ]);
+
+    $maison->update($validated);
+
+    if ($request->hasFile('images')) {
+        foreach ($maison->images as $image) {
+            Storage::disk('public')->delete($image);
+        }
+
+        $images = [];
+        foreach ($request->file('images') as $image) {
+            $images[] = $image->store('maisons', 'public');
+        }
+
+        $maison->images = $images;
+        $maison->save();
+    }
+
+    return response()->json($maison);
+}
+
+    public function editAnnonceMaison(Request $request, $id)
+    {
+        // Tente de récupérer la maison, en vérifiant si le vendeur_id correspond
+        $maison = Maison::where('id', $id)
+            ->where('vendeur_id', Auth::id())
+            ->firstOrFail();
+
+        // Validation des données du formulaire
+        $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'prix' => 'required|numeric|min:0',
+            'superficie' => 'required|numeric|min:1',
+            'nombre_chambres' => 'nullable|integer|min:0',
+            'nombre_pieces' => 'nullable|integer|min:0',
+            'annee_construction' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'meuble' => 'boolean',
+            'ville_id' => 'required|exists:villes,id',
+            'delegation_id' => 'required|exists:delegations,id',
+            'categorie_id' => 'required|exists:categories,id',
+            'type_transaction_id' => 'required|exists:types,id',
+            'environnement_id' => 'nullable|exists:environnements,id',
+        ]);
+
+        // Mise à jour des données de la maison
+        $maison->update($validated);
+
+        // Si de nouvelles images sont envoyées
+        if ($request->hasFile('images')) {
+            // Supprimer les anciennes images
+            foreach ($maison->images as $image) {
+                Storage::disk('public')->delete($image);
+            }
+
+            // Réinitialiser le tableau d'images
+            $images = [];
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('maisons', 'public');
+                $images[] = $path;
+            }
+
+            // Mettre à jour les images
+            $maison->images = $images;
+            $maison->save();
+        }
+
+        // Retourner la maison mise à jour
+        return response()->json($maison);
+    }
+
+    public function deleteAnnonceMaison($id)
+    {
+        $maison = Maison::where('id', $id)
+            ->where('vendeur_id', Auth::id())
+            ->firstOrFail();
+
+        // Supprimer les anciennes images
+        foreach ($maison->images as $image) {
+            Storage::disk('public')->delete($image);
+        }
+
+        $maison->delete();
+
+        return response()->json(['message' => 'Maison supprimée avec succès']);
+    }
+    
+        public function show($id)
+        {
+            // Load the maison with its relationships, including vendeur
+            $maison = Maison::with([
+                'ville',
+                'delegation',
+                'categorie',
+                'typeTransaction',
+                'environnement',
+                'vendeur' // Added vendeur relationship
+            ])->find($id);
+    
+            if (!$maison) {
+                return response()->json(['message' => 'Maison non trouvée'], 404);
+            }
+    
+            // Map images to include URL and path
+            $images = array_map(function ($image) {
+                return [
+                    'url' => asset('storage/' . $image),
+                    'path' => $image
+                ];
+            }, $maison->images ?? []);
+    
+            // Return the maison data with vendeur included
+            return response()->json([
+                'id' => $maison->id,
+                'type_transaction_id' => $maison->type_transaction_id,
+                'categorie_id' => $maison->categorie_id,
+                'ville_id' => $maison->ville_id,
+                'delegation_id' => $maison->delegation_id,
+                'adresse' => $maison->adresse,
+                'titre' => $maison->titre,
+                'description' => $maison->description,
+                'prix' => $maison->prix,
+                'superficie' => $maison->superficie,
+                'nombre_chambres' => $maison->nombre_chambres,
+                'nombre_pieces' => $maison->nombre_pieces,
+                'annee_construction' => $maison->annee_construction,
+                'meuble' => $maison->meuble,
+                'images' => $images,
+                'ville' => $maison->ville,
+                'delegation' => $maison->delegation,
+                'categorie' => $maison->categorie,
+                'type_transaction' => $maison->typeTransaction,
+                'environnement' => $maison->environnement,
+                'vendeur' => $maison->vendeur ? [
+                    'id' => $maison->vendeur->id,
+                    'nom' => $maison->vendeur->nom,
+                    'prenom' => $maison->vendeur->prenom,
+                    'email' => $maison->vendeur->email,
+                    'phone' => $maison->vendeur->phone,
+                ] : null, // Include vendeur data or null if not present
+            ]);
+        }
+ 
     public function indexmaison()
     {
         $maisons = Maison::with(['typeTransaction', 'categorie', 'ville', 'delegation', 'environnement'])->get();
@@ -214,17 +354,24 @@ class MaisonController extends Controller
         $maison->delete();
         return redirect()->route('maisons')->with('success', 'Maison supprimée avec succès.');
     }
-    public function index()
+    public function index(Request $request)
     {
         try {
             // 1. Récupération des maisons avec relations
-            $maisons = Maison::with([
+            $query = Maison::with([
                 'ville',
                 'delegation',
                 'categorie',
                 'typeTransaction',
                 'environnement'
-            ])->orderBy('created_at', 'desc')->get();
+            ]);
+
+            // Apply status filter if provided
+            if ($request->has('status')) {
+                $query->where('status', $request->input('status'));
+            }
+
+            $maisons = $query->orderBy('created_at', 'desc')->get();
     
             // Log pour vérifier les données brutes
             Log::debug('Maisons récupérées', [
@@ -233,16 +380,15 @@ class MaisonController extends Controller
             ]);
     
             // 2. Formatage des données
-      $formatted = $maisons->map(function ($maison) {
-        $images = collect($maison->images)->map(function ($img) {
-            return [
-                'url' => asset('storage/' . $img),
-                'path' => $img
-            ];
-        });
+            $formatted = $maisons->map(function ($maison) {
+                $images = collect($maison->images)->map(function ($img) {
+                    return [
+                        'url' => asset('storage/' . $img),
+                        'path' => $img
+                    ];
+                });
         
-    
-                // 4. Construction de la réponse
+                // 3. Construction de la réponse
                 return [
                     'id' => $maison->id,
                     'titre' => $maison->titre,
@@ -257,11 +403,16 @@ class MaisonController extends Controller
                     'ville' => $maison->ville->nom ?? null,
                     'delegation' => $maison->delegation->nom ?? null,
                     'categorie' => $maison->categorie->nom ?? null,
-                    'type_transaction' => $maison->typeTransaction->nom ?? null,
+                    'type' => $maison->typeTransaction->nom ?? null, // Changed to 'type' to match frontend
                     'environnement' => $maison->environnement->nom ?? null,
                     'images' => $images,
                     'created_at' => $maison->created_at,
-                    'updated_at' => $maison->updated_at
+                    'updated_at' => $maison->updated_at,
+                    'status' => $maison->status, // Added status field
+                    'ville_id' => $maison->ville_id,
+                    'delegation_id' => $maison->delegation_id,
+                    'categorie_id' => $maison->categorie_id,
+                    'type_transaction_id' => $maison->type_transaction_id
                 ];
             });
     
@@ -271,7 +422,7 @@ class MaisonController extends Controller
                 'sample' => $formatted->first()
             ]);
     
-            // 5. Retour de la réponse
+            // 4. Retour de la réponse
             return response()->json($formatted);
     
         } catch (\Exception $e) {
@@ -290,6 +441,17 @@ class MaisonController extends Controller
     
     public function store(Request $request)
     {
+        // Log request headers for debugging
+        Log::info('Request headers', $request->headers->all());
+
+        // Log authentication state
+        Log::info('Authentication state', [
+            'guard' => 'vendeurs',
+            'user' => auth('vendeurs')->user(),
+            'id' => auth('vendeurs')->id(),
+            'token' => $request->bearerToken(),
+        ]);
+
         // 1. Validation des données
         $validated = $request->validate([
             'type_transaction_id' => 'required|exists:types,id',
@@ -303,7 +465,7 @@ class MaisonController extends Controller
             'superficie' => 'required|numeric|min:1',
             'nombre_chambres' => 'required|integer|min:0',
             'nombre_pieces' => 'required|integer|min:0',
-            'annee_construction' => 'required|integer|min:1900|max:'.(date('Y') + 1),
+            'annee_construction' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'environnement_id' => 'required|exists:environnements,id',
             'meuble' => 'sometimes|boolean',
             'images' => 'nullable|array',
@@ -333,15 +495,23 @@ class MaisonController extends Controller
             Log::info('Aucune image envoyée dans la requête');
         }
 
-        // 4. Création de la maison
+        // 4. Récupération de l'ID du vendeur connecté
+        $vendeurId = auth('vendeurs')->id();
+        if (!$vendeurId) {
+            Log::error('Utilisateur non authentifié');
+            return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+        }
+
+        // 5. Création de la maison avec vendeur_id
         $maison = Maison::create(array_merge($validated, [
+            'vendeur_id' => $vendeurId,
             'images' => $imagesPaths ?: []
         ]));
 
-        // 5. Log de la maison créée
+        // 6. Log de la maison créée
         Log::info('Maison créée', ['maison_id' => $maison->id, 'images' => $maison->images]);
 
-        // 6. Retour de la réponse
+        // 7. Retour de la réponse
         return response()->json([
             'message' => 'Maison créée avec succès',
             'data' => $maison->load(['ville', 'delegation', 'categorie', 'typeTransaction', 'environnement'])

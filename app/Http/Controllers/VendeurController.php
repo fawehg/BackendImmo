@@ -14,6 +14,72 @@ use Illuminate\Support\Facades\Auth;
 
 class VendeurController extends Controller
 {
+    public function index()
+    {
+        $annonces = auth()->user()->annonces()
+            ->with(['ville', 'delegation', 'categorie', 'type', 'images'])
+            ->latest()
+            ->get();
+
+        return response()->json($annonces);
+    }
+
+    public function showannonce(Annonce $annonce)
+    {
+        $this->authorize('view', $annonce);
+
+        $annonce->load([
+            'ville', 
+            'delegation', 
+            'categorie', 
+            'type', 
+            'images',
+            'caracteristiques',
+            'environnement'
+        ]);
+
+        return response()->json($annonce);
+    }
+
+    public function updateannonce(Request $request, Annonce $annonce)
+    {
+        $this->authorize('update', $annonce);
+
+        $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'prix' => 'required|numeric|min:0',
+            'superficie' => 'required|numeric|min:1',
+            // Ajoutez les autres règles de validation selon vos besoins
+        ]);
+
+        $annonce->update($validated);
+
+        // Gestion des images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('annonces', 'public');
+                $annonce->images()->create(['url' => $path]);
+            }
+        }
+
+        return response()->json($annonce->load('images'));
+    }
+
+    public function destroyannonce(Annonce $annonce)
+    {
+        $this->authorize('delete', $annonce);
+
+        // Supprimer les images associées
+        foreach ($annonce->images as $image) {
+            Storage::disk('public')->delete($image->url);
+            $image->delete();
+        }
+
+        $annonce->delete();
+
+        return response()->json(['message' => 'Annonce supprimée avec succès']);
+    }
     public function indexe()
     {
         $vendeurs = Vendeur::all();
@@ -222,34 +288,34 @@ public function verifyResetCode(Request $request)
         return response()->json($vendeur);
     }
 
-    // Mettre à jour le profil du vendeur
-    public function update(Request $request)
-    {
-        $vendeur = Auth::guard('vendeurs')->user();
+        // Mettre à jour le profil du vendeur
+        public function update(Request $request)
+        {
+            $vendeur = Auth::guard('vendeurs')->user();
 
-        $request->validate([
-            'nom' => 'sometimes|string|max:255',
-            'prenom' => 'sometimes|string|max:255',
-            'entreprise' => 'sometimes|string|max:255',
-            'telephone' => 'sometimes|string|max:20',
-            'ville' => 'sometimes|string|max:255',
-            'adresse' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:vendeurs,email,'.$vendeur->id,
-            'password' => 'sometimes|string|min:8|confirmed',
-            'description' => 'sometimes|string|max:1000',
-            'logo' => 'sometimes|string',
-            'site_web' => 'sometimes|url|max:255'
-        ]);
+            $request->validate([
+                'nom' => 'sometimes|string|max:255',
+                'prenom' => 'sometimes|string|max:255',
+                'entreprise' => 'sometimes|string|max:255',
+                'telephone' => 'sometimes|string|max:20',
+                'ville' => 'sometimes|string|max:255',
+                'adresse' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:vendeurs,email,'.$vendeur->id,
+                'password' => 'sometimes|string|min:8|confirmed',
+                'description' => 'sometimes|string|max:1000',
+                'logo' => 'sometimes|string',
+                'site_web' => 'sometimes|url|max:255'
+            ]);
 
-        // Ne mettre à jour que les champs fournis
-        $vendeur->fill($request->all());
-        $vendeur->save();
+            // Ne mettre à jour que les champs fournis
+            $vendeur->fill($request->all());
+            $vendeur->save();
 
-        return response()->json([
-            'message' => 'Profil vendeur mis à jour avec succès',
-            'vendeur' => $vendeur
-        ]);
-    }
+            return response()->json([
+                'message' => 'Profil vendeur mis à jour avec succès',
+                'vendeur' => $vendeur
+            ]);
+        }
 
     // Supprimer le compte vendeur
     public function destroy()

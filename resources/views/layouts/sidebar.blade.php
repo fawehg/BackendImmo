@@ -29,6 +29,14 @@
                 <span class="tooltip">Clients</span>
             </a>
         </li>
+        <!-- Nouvel élément pour les propriétés -->
+        <li class="nav-item {{ Route::is('admin.properties*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.properties.index') }}">
+                <i class="fas fa-home"></i>
+                <span>Annonces</span>
+                <span class="tooltip">Gestion des annonces</span>
+            </a>
+        </li>
         <li class="nav-item {{ Request::is('profile*') ? 'active' : '' }}">
             <a class="nav-link" href="/profile">
                 <i class="fas fa-user-circle"></i>

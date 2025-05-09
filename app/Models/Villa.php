@@ -10,6 +10,8 @@ class Villa extends Model
     use HasFactory;
 
     protected $fillable = [
+        'vendeur_id',        'status', // Add status
+
         'type_id', 'categorie_id', 'ville_id', 'delegation_id', 
         'adresse', 'titre', 'description', 'prix', 'superficie',
         'chambres', 'pieces', 'annee_construction', 'meuble','environnement_id',
@@ -26,7 +28,10 @@ class Villa extends Model
     {
         return $this->belongsTo(Type::class);
     }
-    
+    public function vendeur()
+    {
+        return $this->belongsTo(Vendeur::class);
+    }
     public function environnement()
     {
         return $this->belongsTo(Environnement::class);

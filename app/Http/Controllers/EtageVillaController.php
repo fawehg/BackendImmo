@@ -15,7 +15,81 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class EtageVillaController extends Controller
-{  public function indexetagesvillas()
+
+{ public function listAnnonceEtageVilla()
+    {
+        $etages = EtageVilla::where('vendeur_id', Auth::guard('vendeurs')->id())
+            ->with(['ville', 'delegation', 'categorie', 'type', 'environnement'])
+            ->latest()
+            ->get();
+        
+        return response()->json($etages);
+    }
+    
+    public function showAnnonceEtageVilla($id)
+    {
+        $etage = EtageVilla::where('vendeur_id', Auth::guard('vendeurs')->id())
+            ->with(['ville', 'delegation', 'categorie', 'type', 'environnement'])
+            ->findOrFail($id);
+        
+        return response()->json($etage);
+    }
+    
+    public function editAnnonceEtageVilla(Request $request, $id)
+    {
+        $etage = EtageVilla::where('vendeur_id', Auth::guard('vendeurs')->id())->findOrFail($id);
+    
+        $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'prix' => 'required|numeric|min:0',
+            'superficie' => 'required|numeric|min:1',
+            'numero_etage' => 'required|integer|min:0',
+            'acces_independant' => 'boolean',
+            'parking_inclus' => 'boolean',
+            'annee_construction' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'ville_id' => 'required|exists:villes,id',
+            'delegation_id' => 'required|exists:delegations,id',
+            'categorie_id' => 'required|exists:categories,id',
+            'type_id' => 'required|exists:types,id',
+            'environnement_id' => 'nullable|exists:environnements,id',
+        ]);
+    
+        $etage->update($validated);
+    
+        // Handling images if provided
+        if ($request->hasFile('images')) {
+            // Deleting old images
+            foreach ($etage->images as $image) {
+                Storage::disk('public')->delete($image);
+            }
+    
+            $etage->images = [];
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('etage_villas', 'public');
+                $etage->images[] = $path;
+            }
+            $etage->save();
+        }
+    
+        return response()->json($etage);
+    }
+    
+    public function deleteAnnonceEtageVilla($id)
+    {
+        $etage = EtageVilla::where('vendeur_id', Auth::guard('vendeurs')->id())->findOrFail($id);
+    
+        // Deleting images
+        foreach ($etage->images as $image) {
+            Storage::disk('public')->delete($image);
+        }
+    
+        $etage->delete();
+    
+        return response()->json(['message' => 'Étage de villa supprimé avec succès']);
+    }
+    
+     public function indexetagesvillas()
     {
         try {
             $etagesvillas = EtageVilla::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])
@@ -216,49 +290,92 @@ class EtageVillaController extends Controller
         return view('etagesVillas.index', compact('etagesVillasCount'));
     }
     
-    public function index()
+    public function index(Request $request)
     {
-        $etageVillas = EtageVilla::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-    
-        $formatted = $etageVillas->map(function ($etage) {
-            $images = collect(is_string($etage->images) ? json_decode($etage->images, true) : $etage->images)->map(function ($img) {
+        try {
+            // 1. Récupération des étages de villas avec relations
+            $query = EtageVilla::with([
+                'type',
+                'categorie',
+                'ville',
+                'delegation',
+                'environnement'
+            ]);
+
+            // Apply status filter if provided
+            if ($request->has('status')) {
+                $query->where('status', $request->input('status'));
+            }
+
+            $etageVillas = $query->orderBy('created_at', 'desc')->get();
+
+            // Log pour vérifier les données brutes
+            Log::debug('Étages de villas récupérés', [
+                'count' => $etageVillas->count(),
+                'first_item' => $etageVillas->first() ? $etageVillas->first()->toArray() : null
+            ]);
+
+            // 2. Formatage des données
+            $formatted = $etageVillas->map(function ($etage) {
+                $images = collect(is_string($etage->images) ? json_decode($etage->images, true) : $etage->images)->map(function ($img) {
+                    return [
+                        'url' => asset($img),
+                        'path' => $img
+                    ];
+                });
+
                 return [
-                    'url' => asset($img),
-                    'path' => $img
+                    'id' => $etage->id,
+                    'titre' => $etage->titre,
+                    'description' => $etage->description,
+                    'prix' => $etage->prix,
+                    'superficie' => $etage->superficie,
+                    'adresse' => $etage->adresse,
+                    'type' => $etage->type->nom ?? null,
+                    'categorie' => $etage->categorie->nom ?? null,
+                    'ville' => $etage->ville->nom ?? null,
+                    'delegation' => $etage->delegation->nom ?? null,
+                    'environnement' => $etage->environnement->nom ?? null,
+                    'numero_etage' => $etage->numero_etage,
+                    'acces_independant' => $etage->acces_independant,
+                    'parking_inclus' => $etage->parking_inclus,
+                    'annee_construction' => $etage->annee_construction,
+                    'images' => $images,
+                    'created_at' => $etage->created_at,
+                    'updated_at' => $etage->updated_at,
+                    'status' => $etage->status,
+                    'ville_id' => $etage->ville_id,
+                    'delegation_id' => $etage->delegation_id,
+                    'categorie_id' => $etage->categorie_id,
+                    'type_transaction_id' => $etage->type_transaction_id
                 ];
             });
-    
-            return [
-                'id' => $etage->id,
-                'titre' => $etage->titre,
-                'description' => $etage->description,
-                'prix' => $etage->prix,
-                'superficie' => $etage->superficie,
-                'adresse' => $etage->adresse,
-                'type' => $etage->type->nom ?? null,
-                'categorie' => $etage->categorie->nom ?? null,
-                'ville' => $etage->ville->nom ?? null,
-                'delegation' => $etage->delegation->nom ?? null,
-                'environnement' => $etage->environnement->nom ?? null,
-                'numero_etage' => $etage->numero_etage,
-                'acces_independant' => $etage->acces_independant,
-                'parking_inclus' => $etage->parking_inclus,
-                'annee_construction' => $etage->annee_construction,
-                'images' => $images,
-                'created_at' => $etage->created_at,
-                'ville_id' => $etage->ville_id,
-                'delegation_id' => $etage->delegation_id,
-            ];
-        });
-    
-        return response()->json($formatted);
+
+            // Log final avant retour
+            Log::info('Réponse des étages de villas générée', [
+                'count' => $formatted->count(),
+                'sample' => $formatted->first()
+            ]);
+
+            // 3. Retour de la réponse
+            return response()->json($formatted);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur dans EtageVillaController@index', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des étages de villas',
+                'details' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 
     public function show($id)
     {
-        $etage = EtageVilla::with(['type', 'categorie', 'ville', 'delegation', 'environnement'])->find($id);
+        $etage = EtageVilla::with(['type', 'categorie', 'ville', 'delegation', 'environnement', 'vendeur'])->find($id);
 
         if (!$etage) {
             return response()->json(['message' => 'Etage Villa non trouvé'], 404);
@@ -289,11 +406,29 @@ class EtageVillaController extends Controller
             'annee_construction' => $etage->annee_construction,
             'images' => $images,
             'created_at' => $etage->created_at,
+            'vendeur' => $etage->vendeur ? [
+                'id' => $etage->vendeur->id,
+                'nom' => $etage->vendeur->nom,
+                'prenom' => $etage->vendeur->prenom,
+                'email' => $etage->vendeur->email,
+                'phone' => $etage->vendeur->phone ?? null,
+            ] : null,
         ]);
-    }   
+    }
     public function store(Request $request)
     {
-        
+        // Log request headers for debugging
+        Log::info('Request headers', $request->headers->all());
+
+        // Log authentication state
+        Log::info('Authentication state', [
+            'guard' => 'vendeurs',
+            'user' => auth('vendeurs')->user(),
+            'id' => auth('vendeurs')->id(),
+            'token' => $request->bearerToken(),
+        ]);
+
+        // 1. Validation des données
         $validator = Validator::make($request->all(), [
             'type_id' => 'required|exists:types,id',
             'categorie_id' => 'required|exists:categories,id',
@@ -309,38 +444,71 @@ class EtageVillaController extends Controller
             'acces_independant' => 'boolean',
             'parking_inclus' => 'boolean',
             'annee_construction' => 'required|integer|min:1900|max:'.date('Y'),
-
             'images' => 'nullable|array',
-            
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
+            Log::error('Validation failed', ['errors' => $validator->errors()]);
             return response()->json([
                 'status' => 'error',
                 'errors' => $validator->errors()
             ], 422);
         }
 
+        // 2. Log des données reçues
+        Log::info('Requête reçue pour store etage_villa', [
+            'files' => $request->hasFile('images'),
+            'images_count' => count($request->file('images') ?? []),
+            'data' => $request->all(),
+        ]);
+
+        // 3. Traitement des images
+        $imagesPaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('public/etage_villas');
+                $imagesPaths[] = str_replace('public/', 'storage/', $path);
+            }
+            $data['images'] = json_encode($imagesPaths);
+        } else {
+            Log::info('Aucune image envoyée dans la requête');
+        }
+
+        // 4. Récupération de l'ID du vendeur connecté
+        $vendeurId = auth('vendeurs')->id();
+        if (!$vendeurId) {
+            Log::error('Utilisateur non authentifié après validation JWT');
+            return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+        }
+
+        // 5. Création de l'étage de villa avec vendeur_id
         $data = $request->except('images');
         $data['acces_independant'] = $request->boolean('acces_independant');
         $data['parking_inclus'] = $request->boolean('parking_inclus');
-
-        // Gestion des images
-        if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('public/etage_villas');
-                $imagePaths[] = str_replace('public/', 'storage/', $path);
-            }
-            $data['images'] = json_encode($imagePaths);
-        }
+        $data['images'] = $imagesPaths ? json_encode($imagesPaths) : null;
+        $data['vendeur_id'] = $vendeurId;
 
         $etageVilla = EtageVilla::create($data);
 
+        // 6. Log de l'étage de villa créé
+        Log::info('Étage de villa créé', [
+            'etage_villa_id' => $etageVilla->id,
+            'images' => $etageVilla->images,
+            'vendeur_id' => $etageVilla->vendeur_id,
+        ]);
+
+        // 7. Retour de la réponse
         return response()->json([
+            'message' => 'Étage de villa créé avec succès',
             'status' => 'success',
-            'data' => $etageVilla
+            'data' => $etageVilla->load([
+                'ville',
+                'delegation',
+                'categorie',
+                'type',
+                'environnement',
+            ])
         ], 201);
     }
 }

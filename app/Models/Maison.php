@@ -10,6 +10,10 @@ class Maison extends Model
     use HasFactory;
 
     protected $fillable = [
+        'vendeur_id',        'status', // Add status
+
+        'is_approved', // Add this
+
         'type_transaction_id',
         'categorie_id',
         'ville_id',
@@ -39,7 +43,10 @@ class Maison extends Model
     {
         return $this->belongsTo(Type::class, 'type_transaction_id');
     }
-
+    public function vendeur()
+    {
+        return $this->belongsTo(Vendeur::class);
+    }
     public function categorie()
     {
         return $this->belongsTo(Categorie::class);

@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Appartement extends Model
 {
     protected $fillable = [
+        'vendeur_id',
+        'status', // Add status
+
         'type_transaction_id',
         'categorie_id',
         'ville_id',
@@ -32,7 +35,10 @@ class Appartement extends Model
     {
         return $this->belongsToMany(EnvironnementApp::class, 'appartement_environnementapp', 'appartement_id', 'environnementapp_id');
     }
-    
+    public function vendeur()
+    {
+        return $this->belongsTo(Vendeur::class);
+    }
 
     public function typeTransaction()
     {

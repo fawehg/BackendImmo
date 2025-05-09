@@ -10,6 +10,8 @@ class Terrain extends Model
     use HasFactory;
 
     protected $fillable = [
+        'vendeur_id',        'status', // Add status
+
         'type_id',
         'categorie_id',
         'ville_id',
@@ -35,7 +37,10 @@ class Terrain extends Model
     {
         return $this->belongsTo(Type::class);
     }
-
+    public function vendeur()
+    {
+        return $this->belongsTo(Vendeur::class);
+    }
     public function categorie()
     {
         return $this->belongsTo(Categorie::class);

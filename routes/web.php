@@ -14,6 +14,7 @@ use App\Http\Controllers\EtageVillaController;
 use App\Http\Controllers\TerrainController;
 use App\Http\Controllers\VillaController;
 use App\Http\Controllers\FermeController;
+use App\Http\Controllers\Admin\PropertyApprovalController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -29,7 +30,12 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('login', 'loginAction')->name('login.action');
     Route::post('logout', 'logout')->middleware('auth')->name('logout');
 });
-
+Route::post('/properties/{type}/{id}', [PropertyApprovalController::class, 'update'])->name('properties.update');
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/properties', [PropertyApprovalController::class, 'index'])->name('properties.index');
+    Route::get('/properties/{type}/{id}', [PropertyApprovalController::class, 'show'])->name('properties.show');
+    Route::patch('/properties/{type}/{id}', [PropertyApprovalController::class, 'update'])->name('properties.update');
+});
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', function () {
         return view('dashboard');

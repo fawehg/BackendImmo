@@ -274,62 +274,107 @@ class VillaController extends Controller
     $terrainsCount = Villa::count();
     return view('villas.index', compact('villaCount'));
 }
-    public function index()
+public function index(Request $request)
     {
-        $villas = Villa::with(['ville', 'delegation', 'categorie', 'type', 'environnement'])
-                       ->orderBy('created_at', 'desc')
-                       ->get();
+        try {
+            // 1. Récupération des villas avec relations
+            $query = Villa::with([
+                'ville',
+                'delegation',
+                'categorie',
+                'type',
+                'environnement'
+            ]);
 
-        $formattedVillas = $villas->map(function ($villa) {
-            // Convertir les chemins relatifs en URLs absolues
-            $images = array_map(function ($image) {
+            // Apply status filter if provided
+            if ($request->has('status')) {
+                $query->where('status', $request->input('status'));
+            }
+
+            $villas = $query->orderBy('created_at', 'desc')->get();
+
+            // Log pour vérifier les données brutes
+            Log::debug('Villas récupérées', [
+                'count' => $villas->count(),
+                'first_item' => $villas->first() ? $villas->first()->toArray() : null
+            ]);
+
+            // 2. Formatage des données
+            $formattedVillas = $villas->map(function ($villa) {
+                // Convertir les chemins relatifs en URLs absolues
+                $images = array_map(function ($image) {
+                    return [
+                        'url' => asset('storage/' . $image),
+                        'path' => $image
+                    ];
+                }, $villa->images ?? []);
+
                 return [
-                    'url' => asset('storage/' . $image),
-                    'path' => $image
+                    'id' => $villa->id,
+                    'titre' => $villa->titre,
+                    'description' => $villa->description,
+                    'prix' => $villa->prix,
+                    'superficie' => $villa->superficie,
+                    'chambres' => $villa->chambres,
+                    'pieces' => $villa->pieces,
+                    'annee_construction' => $villa->annee_construction,
+                    'meuble' => $villa->meuble,
+                    'adresse' => $villa->adresse,
+                    'ville' => $villa->ville->nom ?? null,
+                    'delegation' => $villa->delegation->nom ?? null,
+                    'categorie' => $villa->categorie->nom ?? null,
+                    'type' => $villa->type->nom ?? null,
+                    'environnement' => $villa->environnement->nom ?? null,
+                    'jardin' => $villa->jardin,
+                    'piscine' => $villa->piscine,
+                    'etages' => $villa->etages,
+                    'superficie_jardin' => $villa->superficie_jardin,
+                    'piscine_privee' => $villa->piscine_privee,
+                    'garage' => $villa->garage,
+                    'cave' => $villa->cave,
+                    'terrasse' => $villa->terrasse,
+                    'images' => $images,
+                    'created_at' => $villa->created_at,
+                    'updated_at' => $villa->updated_at,
+                    'status' => $villa->status,
+                    'ville_id' => $villa->ville_id,
+                    'delegation_id' => $villa->delegation_id,
+                    'categorie_id' => $villa->categorie_id,
+                    'type_transaction_id' => $villa->type_transaction_id
                 ];
-            }, $villa->images ?? []);
+            });
 
-            return [
-                'id' => $villa->id,
-                'titre' => $villa->titre,
-                'description' => $villa->description,
-                'prix' => $villa->prix,
-                'superficie' => $villa->superficie,
-                'chambres' => $villa->chambres,
-                'pieces' => $villa->pieces,
-                'annee_construction' => $villa->annee_construction,
-                'meuble' => $villa->meuble,
-                'adresse' => $villa->adresse,
-                'ville' => $villa->ville->nom,
-                'delegation' => $villa->delegation->nom,
-                'categorie' => $villa->categorie->nom,
-                'type' => $villa->type->nom,
-                'environnement' => $villa->environnement->nom,
-                'jardin' => $villa->jardin,
-                'piscine' => $villa->piscine,
-                'etages' => $villa->etages,
-                'superficie_jardin' => $villa->superficie_jardin,
-                'piscine_privee' => $villa->piscine_privee,
-                'garage' => $villa->garage,
-                'cave' => $villa->cave,
-                'terrasse' => $villa->terrasse,
-                'images' => $images,
-                'created_at' => $villa->created_at,
-                'updated_at' => $villa->updated_at
-            ];
-        });
+            // Log final avant retour
+            Log::info('Réponse des villas générée', [
+                'count' => $formattedVillas->count(),
+                'sample' => $formattedVillas->first()
+            ]);
 
-        return response()->json($formattedVillas);
+            // 3. Retour de la réponse
+            return response()->json($formattedVillas);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur dans VillaController@index', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la récupération des villas',
+                'details' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
-
     public function show($id)
     {
+        // Load the villa with its relationships, including vendeur
         $villa = Villa::with([
             'ville',
             'delegation',
             'categorie',
             'type',
-            'environnement'
+            'environnement',
+            'vendeur' // Added vendeur relationship
         ])->find($id);
 
         if (!$villa) {
@@ -355,11 +400,11 @@ class VillaController extends Controller
             'annee_construction' => $villa->annee_construction,
             'meuble' => $villa->meuble,
             'adresse' => $villa->adresse,
-            'ville' => $villa->ville,
-            'delegation' => $villa->delegation,
-            'categorie' => $villa->categorie,
-            'type' => $villa->type,
-            'environnement' => $villa->environnement,
+            'ville' => $villa->ville ? ['id' => $villa->ville->id, 'nom' => $villa->ville->nom] : null,
+            'delegation' => $villa->delegation ? ['id' => $villa->delegation->id, 'nom' => $villa->delegation->nom] : null,
+            'categorie' => $villa->categorie ? ['id' => $villa->categorie->id, 'nom' => $villa->categorie->nom] : null,
+            'type' => $villa->type ? ['id' => $villa->type->id, 'nom' => $villa->type->nom] : null,
+            'environnement' => $villa->environnement ? ['id' => $villa->environnement->id, 'nom' => $villa->environnement->nom] : null,
             'jardin' => $villa->jardin,
             'piscine' => $villa->piscine,
             'etages' => $villa->etages,
@@ -368,11 +413,30 @@ class VillaController extends Controller
             'garage' => $villa->garage,
             'cave' => $villa->cave,
             'terrasse' => $villa->terrasse,
-            'images' => $images
+            'images' => $images,
+            'vendeur' => $villa->vendeur ? [
+                'id' => $villa->vendeur->id,
+                'nom' => $villa->vendeur->nom,
+                'prenom' => $villa->vendeur->prenom,
+                'email' => $villa->vendeur->email,
+                'phone' => $villa->vendeur->phone,
+            ] : null
         ]);
     }
     public function store(Request $request)
     {
+        // Log des informations de requête
+        Log::info('Request headers', $request->headers->all());
+
+        // Log authentication state
+        Log::info('Authentication state', [
+            'guard' => 'vendeurs',
+            'user' => auth('vendeurs')->user(),
+            'id' => auth('vendeurs')->id(),
+            'token' => $request->bearerToken(),
+        ]);
+    
+        // Validation des données
         $validated = $request->validate([
             'type_id' => 'required|exists:types,id',
             'categorie_id' => 'required|exists:categories,id',
@@ -399,16 +463,24 @@ class VillaController extends Controller
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg|max:2048'
         ]);
-
-        // Traitement des images
+    
+        // Traitement des images (exactement comme vous le souhaitez)
         $imagesPaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $path = $image->store('villas_images', 'public');
                 $imagesPaths[] = $path;
             }
+            Log::info('Images stored', ['paths' => $imagesPaths]);
         }
-
+    
+        // Récupération de l'ID du vendeur
+        $vendeurId = auth('vendeurs')->id();
+        if (!$vendeurId) {
+            Log::error('Vendeur not authenticated');
+            return response()->json(['message' => 'Authentification requise'], 401);
+        }
+    
         // Création de la villa
         $villa = Villa::create([
             'type_id' => $validated['type_id'],
@@ -433,12 +505,22 @@ class VillaController extends Controller
             'garage' => $validated['garage'] ?? false,
             'cave' => $validated['cave'] ?? false,
             'terrasse' => $validated['terrasse'] ?? false,
-            'images' => $imagesPaths,
+            'images' => $imagesPaths, // Exactement comme vous le vouliez
+            'vendeur_id' => $vendeurId // Ajout du vendeur
         ]);
-
+    
+        Log::info('Villa created', ['id' => $villa->id]);
+    
         return response()->json([
             'message' => 'Villa créée avec succès',
-            'data' => $villa
+            'data' => $villa->load([
+                'ville',
+                'delegation',
+                'categorie',
+                'type',
+                'environnement',
+                'vendeur'
+            ])
         ], 201);
     }
 
