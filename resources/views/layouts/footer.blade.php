@@ -2,7 +2,7 @@
   <div class="footer-container">
     <div class="footer-content">
       <div class="footer-brand">
-        <img src="{{ asset('admin_assets/img/hh.png') }}" alt="B2C Logo" class="footer-logo">
+        <img src="{{ asset('admin_assets/img/hh.png') }}" alt="ImmoGo Logo" class="footer-logo">
         <p class="footer-slogan">Connecter, Innover, Prospérer</p>
       </div>
       <div class="footer-social">
@@ -17,7 +17,7 @@
         </a>
       </div>
       <div class="footer-copyright">
-        <span>Copyright © B2C {{ now()->year }} - Tous droits réservés</span>
+        <span>Copyright © ImmoGo {{ now()->year }} - Tous droits réservés</span>
       </div>
     </div>
   </div>

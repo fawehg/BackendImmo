@@ -228,11 +228,11 @@ class AuthController extends Controller
   
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+Auth::guard('admins')->logout();
   
         $request->session()->invalidate();
   
-        return redirect('/');
+        return redirect('/login');
     }
  
     public function profile()
