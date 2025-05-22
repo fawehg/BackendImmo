@@ -195,7 +195,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Style pour les erreurs de validation */
         .error-message {
             color: #E53E3E;
             font-size: 0.85rem;
@@ -225,7 +224,6 @@
             }
         }
 
-        /* Animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -284,6 +282,15 @@
                     @enderror
                 </div>
 
+                <div class="form-group">
+                    <label for="phone"><i class="fas fa-phone"></i>Téléphone</label>
+                    <i class="fas fa-phone input-icon"></i>
+                    <input type="text" id="phone" name="phone" value="{{ old('phone') }}" placeholder="+123 456 7890" class="form-input @error('phone') input-error @enderror">
+                    @error('phone')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="form-group full-width">
                     <label for="adresse"><i class="fas fa-home"></i>Adresse</label>
                     <i class="fas fa-home input-icon"></i>
@@ -331,7 +338,6 @@
     </div>
 
     <script>
-        // Indicateur de force du mot de passe
         const passwordInput = document.getElementById('password');
         const strengthText = document.getElementById('strength-text');
         const strengthFill = document.getElementById('strength-fill');
@@ -340,16 +346,12 @@
             const password = this.value;
             let strength = 0;
             
-            // Vérifier la longueur
             if (password.length >= 8) strength += 1;
             if (password.length >= 12) strength += 1;
-            
-            // Vérifier la complexité
             if (/[A-Z]/.test(password)) strength += 1;
             if (/[0-9]/.test(password)) strength += 1;
             if (/[^A-Za-z0-9]/.test(password)) strength += 1;
             
-            // Mettre à jour l'affichage
             updateStrengthIndicator(strength);
         });
         

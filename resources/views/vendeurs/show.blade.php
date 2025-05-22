@@ -210,7 +210,6 @@
             }
         }
 
-        /* Animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -228,6 +227,7 @@
         .detail-item:nth-child(5) { animation-delay: 0.5s; }
         .detail-item:nth-child(6) { animation-delay: 0.6s; }
         .detail-item:nth-child(7) { animation-delay: 0.7s; }
+        .detail-item:nth-child(8) { animation-delay: 0.8s; }
     </style>
 </head>
 <body>
@@ -267,6 +267,16 @@
                 </div>
                 <div class="detail-value">
                     {{ $vendeur->email }}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-phone"></i>
+                    <span>Téléphone</span>
+                </div>
+                <div class="detail-value">
+                    {{ $vendeur->phone ?? 'Non renseigné' }}
                 </div>
             </div>
 

@@ -98,6 +98,7 @@ class VendeurController extends Controller
             'prenom' => 'required|string',
             'ville' => 'required|string',
             'adresse' => 'required|string',
+            'phone' => 'nullable|string|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|max:15', // Validation pour téléphone
             'email' => 'required|email|unique:vendeurs',
             'password' => 'required|string|min:6|confirmed',
         ]);
@@ -129,6 +130,7 @@ class VendeurController extends Controller
             'prenom' => 'required|string',
             'ville' => 'required|string',
             'adresse' => 'required|string',
+            'phone' => 'nullable|string|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|max:15',
             'email' => 'required|email|unique:vendeurs,email,'.$id,
             'password' => 'nullable|string|min:6|confirmed',
         ]);
@@ -158,6 +160,7 @@ class VendeurController extends Controller
             'prenom' => 'required|string',
             'ville' => 'required|string',
             'adresse' => 'required|string',
+            'phone' => 'nullable|string|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|max:15',
             'email' => 'required|email|unique:vendeurs',
             'password' => 'required|string|min:6|confirmed',
         ]);
@@ -167,6 +170,7 @@ class VendeurController extends Controller
             'prenom' => $request->prenom,
             'ville' => $request->ville,
             'adresse' => $request->adresse,
+            'phone' => $request->phone, // Ajout du champ phone
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

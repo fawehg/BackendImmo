@@ -155,7 +155,6 @@
             font-style: italic;
         }
 
-        /* Style pour les erreurs de validation */
         .error-message {
             color: #E53E3E;
             font-size: 0.85rem;
@@ -212,6 +211,15 @@
                 <i class="fas fa-map-marker-alt input-icon"></i>
                 <input type="text" id="ville" name="ville" value="{{ old('ville', $vendeur->ville) }}" class="form-input @error('ville') input-error @enderror" required>
                 @error('ville')
+                    <div class="error-message">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="phone"><i class="fas fa-phone"></i>Téléphone</label>
+                <i class="fas fa-phone input-icon"></i>
+                <input type="text" id="phone" name="phone" value="{{ old('phone', $vendeur->phone) }}" placeholder="+123 456 7890" class="form-input @error('phone') input-error @enderror">
+                @error('phone')
                     <div class="error-message">{{ $message }}</div>
                 @enderror
             </div>

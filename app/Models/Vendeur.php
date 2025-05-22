@@ -16,6 +16,7 @@ class Vendeur extends Authenticatable implements JWTSubject
         'prenom',
         'ville',
         'adresse',
+        'phone', // Ajout du champ phone
         'email',
         'password',
     ];
